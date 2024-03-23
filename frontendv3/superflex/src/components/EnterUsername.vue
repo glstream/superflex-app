@@ -1,7 +1,11 @@
 <template>
   <a-layout class="layout">
     <AppHeader />
+
     <a-layout-content style="padding: 0 50px">
+      <a-breadcrumb style="margin: 16px 0">
+        <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
+      </a-breadcrumb>
       <div class="form-container">
         <a-form
           :model="formState"
@@ -27,9 +31,9 @@
             :rules="[{ required: true, message: 'Please select a league year!' }]"
           >
             <a-select v-model:value="formState.leagueYear" placeholder="Select a year">
-              <a-select-option value="2021">2023</a-select-option>
+              <a-select-option value="2023">2023</a-select-option>
               <a-select-option value="2022">2022</a-select-option>
-              <a-select-option value="2023">2021</a-select-option>
+              <a-select-option value="2021">2021</a-select-option>
               <!-- Add more years as needed -->
             </a-select>
           </a-form-item>
@@ -40,6 +44,7 @@
         </a-form>
       </div>
     </a-layout-content>
+    <AppFooter />
   </a-layout>
 </template>
 <script lang="ts" setup>
@@ -47,6 +52,9 @@ import { reactive } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router' // Import useRouter for programmatic navigation
 import AppHeader from '@/components/AppHeader.vue'
+import AppFooter from '@/components/AppFooter.vue'
+
+import { useGuid } from '../utils/guid'
 
 interface FormState {
   userName: string
@@ -62,16 +70,21 @@ const router = useRouter() // Use the useRouter composable to get access to the 
 
 const onFinish = async (values: any) => {
   try {
+    const { getOrCreateGUID } = useGuid()
+    const userGuid = getOrCreateGUID()
+
+    console.log('User GUID:', userGuid)
     // Make a POST request to your backend server
     await axios.post('http://127.0.0.1:8000/user_details', {
       league_year: formState.leagueYear,
-      user_name: formState.userName
+      user_name: formState.userName,
+      guid: userGuid
     })
     console.log('Username submission successful')
     console.log(formState.userName)
 
     // Redirect to the /leagues endpoint
-    router.push(`/leagues/${formState.leagueYear}/${formState.userName}`)
+    router.push(`/leagues/${formState.leagueYear}/${formState.userName}/${userGuid}`)
   } catch (error) {
     router.push(`/leagues/${formState.userName}`)
     console.error('Failed to submit userName:', error)

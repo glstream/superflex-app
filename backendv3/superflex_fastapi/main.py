@@ -1,13 +1,16 @@
+from itsdangerous import URLSafeTimedSerializer
+from fastapi import FastAPI, Request, Response
 from fastapi import FastAPI, Depends
 from psycopg2 import extras
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from db import get_db
-from superflex_models import UserDataModel, LeagueDataModel
+from superflex_models import UserDataModel, LeagueDataModel, RosterDataModel
 from pathlib import Path
 
 # UTILS
-from utils import (get_user_id, insert_current_leagues, insert_league)
+from utils import (get_user_id, insert_current_leagues,
+                   insert_league, player_manager_rosters)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -26,10 +29,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+# POST ROUTES
 
 
 @app.post("/user_details")
@@ -43,34 +43,50 @@ def league_details(league_data: LeagueDataModel, db=Depends(get_db)):
     return insert_league(db, league_data)
 
 
+@app.post("/roster")
+def roster(roster_data: RosterDataModel, db=Depends(get_db)):
+    print('attempt rosters')
+    return player_manager_rosters(db, roster_data)
+
+# GET ROUTES
+
+
 @app.get("/leagues")
-def leagues(league_year: str, user_name: str, db: str = Depends(get_db)):
+def leagues(league_year: str, user_name: str, guid: str, db: str = Depends(get_db)):
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
     user_id = get_user_id(user_name)
-    session_id = 'cc73437c-40b6-4cd4-9835-6b41033968c4'  # testing session_id
+    # session_id = 'FAST_API'  # testing session_id
+    # session_id = 'cc73437c-40b6-4cd4-9835-6b41033968c4'
+    session_id = guid
 
     cursor_.execute(
-        f"""select ROW_NUMBER() OVER() as key, session_id, cl.user_id, cl.league_id, league_name, avatar, total_rosters, qb_cnt, CASE WHEN sf_cnt > 0 THEN 'Superflex' else 'SingleQB' end as sf_check, starter_cnt, total_roster_cnt, sport, insert_date, rf_cnt, case when league_cat = 0 THEN 'redraft' else 'dynasty' end as league_type, league_year, rs.ktc_power_rank, rs.sf_power_rank, rs.fc_power_rank, rs.dp_power_rank, rs.espn_contender_rank, rs.nfl_contender_rank, rs.fp_contender_rank, rs.fc_contender_rank, rs.cbs_contender_rank 
+        f"""select ROW_NUMBER() OVER() as key, session_id, cl.user_id, cl.league_id, league_name, avatar, total_rosters, qb_cnt, CASE WHEN sf_cnt > 0 THEN 'Superflex' else 'Single QB' end as roster_type, starter_cnt, total_roster_cnt, sport, insert_date, rf_cnt, case when league_cat = 0 THEN 'Redraft' when league_cat = 1 THEN 'Keeper' else 'Dynasty' end as league_type, league_year, rs.ktc_power_rank, rs.sf_power_rank, rs.fc_power_rank, rs.dp_power_rank, rs.espn_contender_rank, rs.nfl_contender_rank, rs.fp_contender_rank, rs.fc_contender_rank, rs.cbs_contender_rank 
     from dynastr.current_leagues cl 
     left join dynastr.ranks_summary rs on cl.league_id = rs.league_id and cl.user_id = rs.user_id  
     where 1=1
-    and session_id = 'cc73437c-40b6-4cd4-9835-6b41033968c4' 
+    and session_id = '{session_id}' 
     and cl.user_id ='{user_id}' 
-    and league_year = '{league_year}'
-    limit 10"""
+    and league_year = '{league_year}'"""
     )
     db_resp_obj = cursor_.fetchall()
 
     return db_resp_obj
 
 
+@app.get("/get_user")
+def get_user(user_name: str):
+    return {"user_id": get_user_id(user_name)}
+
+
 @app.get("/league")
-def league(league_id: str, platform: str, rank_type: str, db: str = Depends(get_db)):
+def league(league_id: str, platform: str, rank_type: str, guid: str, roster_type: str, db: str = Depends(get_db)):
     print(league_id, platform, rank_type)
 
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
-    session_id = 'cc73437c-40b6-4cd4-9835-6b41033968c4'  # testing session_id
-    league_type = 'sf_value'
+    # session_id = 'FAST_API'  # testing session_id
+    # session_id = 'cc73437c-40b6-4cd4-9835-6b41033968c4'  # testing session_id
+    session_id = guid
+    league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
 
     if platform == 'sf':
         league_pos_col = (
@@ -84,12 +100,12 @@ def league(league_id: str, platform: str, rank_type: str, db: str = Depends(get_
             else "superflex_one_qb_value"
         )
         with open(
-            Path.cwd() / "sql" / "details" /
+            Path.cwd() / "sql" / "summary" /
             f"{rank_type}" / f"{platform}.sql",
             "r",
-        ) as power_file:
-            power_sql = (
-                power_file.read()
+        ) as power_summary_file:
+            power_summary_sql = (
+                power_summary_file.read()
                 .replace("'session_id'", f"'{session_id}'")
                 .replace("league_type", f"{league_type}")
                 .replace("'league_id'", f"'{league_id}'")
@@ -98,17 +114,46 @@ def league(league_id: str, platform: str, rank_type: str, db: str = Depends(get_
 
     else:
         with open(
-            Path.cwd() / "sql" / "details" /
+            Path.cwd() / "sql" / "summary" /
             f"{rank_type}" / f"{platform}.sql",
             "r",
-        ) as power_file:
-            power_sql = (
-                power_file.read()
+        ) as power_summary_file:
+            power_summary_sql = (
+                power_summary_file.read()
                 .replace("'session_id'", f"'{session_id}'")
-                .replace("league_type", f"{league_type}")
                 .replace("'league_id'", f"'{league_id}'")
+                .replace("league_type", f"{league_type}")
             )
-    cursor_.execute(power_sql)
+    cursor_.execute(power_summary_sql)
     db_resp_obj = cursor_.fetchall()
+    cursor_.close()
+
+    return db_resp_obj
+
+
+@app.get("/league_detail")
+def league_detail(league_id: str, platform: str, rank_type: str, guid: str, roster_type: str, db: str = Depends(get_db)):
+
+    cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
+    session_id = guid
+    league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+    league_pos_col = (
+        "sf_position_rank" if league_type == "sf_value" else "one_qb_position_rank"
+    )
+
+    with open(
+        Path.cwd() / "sql" / "details" / f"{rank_type}" / f"{platform}.sql",
+        "r",
+    ) as power_detail_file:
+        power_detail_sql = (
+            power_detail_file.read()
+            .replace("'session_id'", f"'{session_id}'")
+            .replace("'league_id'", f"'{league_id}'")
+            .replace("league_type", f"{league_type}")
+            .replace("league_pos_col", f"{league_pos_col}")
+        )
+    cursor_.execute(power_detail_sql)
+    db_resp_obj = cursor_.fetchall()
+    cursor_.close()
 
     return db_resp_obj

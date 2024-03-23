@@ -1,13 +1,12 @@
 <template>
   <a-layout class="layout">
     <AppHeader />
-    <a-layout-content style="padding: 0 50px">
+    <a-layout-content class="main-content" style="padding: 0 50px; flex-grow: 1">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
-        <a-breadcrumb-item @click.prevent="goBack">Leagues</a-breadcrumb-item>
+        <a-breadcrumb-item><a :href="leaguesUrl">Leagues</a></a-breadcrumb-item>
         <a-breadcrumb-item>{{ leagueInfo.leagueName }}</a-breadcrumb-item>
       </a-breadcrumb>
-
       <a-row>
         <a-col :span="24">
           <a-card
@@ -16,7 +15,7 @@
             bordered
           >
             <template #extra>
-              <a-button @click="loadLeagueDetails(leagueInfo.leagueId)" type="primary"
+              <a-button @click="insertLeagueDetials(leagueInfo.leagueId)" type="primary"
                 >Load League</a-button
               >
             </template>
@@ -37,7 +36,7 @@
             >
               <a-tab-pane key="1" tab="Keep Trade Cut" data-metadata="ktc">
                 <a-spin :spinning="isLoading">
-                  <div class="tags-container">
+                  <div class="tags-container" v-if="positionalRanks.length > 0">
                     <div
                       class="tag-group"
                       v-for="rankInfo in positionalRanks"
@@ -68,13 +67,16 @@
                         ><a-tag class="summary-badge">{{ addOrdinalSuffix(rankInfo.rank) }}</a-tag>
                       </div>
                     </div>
+                  </div>
+                  <div v-else style="text-align: center">
+                    <a-empty />
                   </div>
                 </a-spin>
               </a-tab-pane>
 
               <a-tab-pane key="2" tab="Superflex" data-metadata="sf">
                 <a-spin :spinning="isLoading">
-                  <div class="tags-container">
+                  <div class="tags-container" v-if="positionalRanks.length > 0">
                     <div
                       class="tag-group"
                       v-for="rankInfo in positionalRanks"
@@ -106,11 +108,13 @@
                       </div>
                     </div>
                   </div>
-                </a-spin></a-tab-pane
-              >
+                  <div v-else style="text-align: center">
+                    <a-empty />
+                  </div> </a-spin
+              ></a-tab-pane>
               <a-tab-pane key="3" tab="FantasyCalc">
                 <a-spin :spinning="isLoading">
-                  <div class="tags-container">
+                  <div class="tags-container" v-if="positionalRanks.length > 0">
                     <div
                       class="tag-group"
                       v-for="rankInfo in positionalRanks"
@@ -142,11 +146,13 @@
                       </div>
                     </div>
                   </div>
-                </a-spin></a-tab-pane
-              >
+                  <div v-else style="text-align: center">
+                    <a-empty />
+                  </div> </a-spin
+              ></a-tab-pane>
               <a-tab-pane key="4" tab="DynastyProcess">
                 <a-spin :spinning="isLoading">
-                  <div class="tags-container">
+                  <div class="tags-container" v-if="positionalRanks.length > 0">
                     <div
                       class="tag-group"
                       v-for="rankInfo in positionalRanks"
@@ -178,8 +184,13 @@
                       </div>
                     </div>
                   </div>
-                </a-spin></a-tab-pane
-              >
+                  <div v-else style="text-align: center">
+                    <a-empty />
+                  </div>
+                  <div v-else style="text-align: center">
+                    <a-empty />
+                  </div> </a-spin
+              ></a-tab-pane>
             </a-tabs>
           </a-card>
           <a-card title="Contender Rankings" bordered>
@@ -192,7 +203,7 @@
             >
               <a-tab-pane key="5" tab="ESPN" force-render>
                 <a-spin :spinning="contenderIsLoading">
-                  <div class="tags-container">
+                  <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
                     <div
                       class="tag-group"
                       v-for="conRankInfo in contenderPositionalRanks"
@@ -226,11 +237,13 @@
                       </div>
                     </div>
                   </div>
-                </a-spin></a-tab-pane
-              >
+                  <div v-else style="text-align: center">
+                    <a-empty />
+                  </div> </a-spin
+              ></a-tab-pane>
               <a-tab-pane key="6" tab="NFL" force-render>
                 <a-spin :spinning="contenderIsLoading">
-                  <div class="tags-container">
+                  <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
                     <div
                       class="tag-group"
                       v-for="conRankInfo in contenderPositionalRanks"
@@ -264,11 +277,13 @@
                       </div>
                     </div>
                   </div>
-                </a-spin></a-tab-pane
-              >
+                  <div v-else style="text-align: center">
+                    <a-empty />
+                  </div> </a-spin
+              ></a-tab-pane>
               <a-tab-pane key="7" tab="FantasyCalc" force-render>
                 <a-spin :spinning="contenderIsLoading">
-                  <div class="tags-container">
+                  <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
                     <div
                       class="tag-group"
                       v-for="conRankInfo in contenderPositionalRanks"
@@ -302,11 +317,13 @@
                       </div>
                     </div>
                   </div>
-                </a-spin></a-tab-pane
-              >
+                  <div v-else style="text-align: center">
+                    <a-empty />
+                  </div> </a-spin
+              ></a-tab-pane>
               <a-tab-pane key="9" tab="CBS" force-render>
                 <a-spin :spinning="contenderIsLoading">
-                  <div class="tags-container">
+                  <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
                     <div
                       class="tag-group"
                       v-for="conrankInfo in contenderPositionalRanks"
@@ -340,13 +357,16 @@
                       </div>
                     </div>
                   </div>
-                </a-spin></a-tab-pane
-              >
+                  <div v-else style="text-align: center">
+                    <a-empty />
+                  </div> </a-spin
+              ></a-tab-pane>
             </a-tabs>
           </a-card>
         </a-col>
       </a-row>
     </a-layout-content>
+    <AppFooter />
   </a-layout>
 </template>
 
@@ -358,6 +378,7 @@ import axios from 'axios'
 import type { TabsProps, message, Spin } from 'ant-design-vue'
 
 import AppHeader from '@/components/AppHeader.vue'
+import AppFooter from '@/components/AppFooter.vue'
 import { addOrdinalSuffix } from '../utils/suffix'
 
 const route = useRoute()
@@ -366,7 +387,7 @@ const router = useRouter() // Use the useRouter composable to get access to the 
 const conActiveKey = ref('5')
 const activeKey = ref('1')
 
-const leagueDetails = ref(null) // This will store the fetched league details
+const leagueDetails = reactive({}) // This will store the fetched league details
 const isLoading = ref(false) // Optional: To track loading state
 const contenderIsLoading = ref(false) // Optional: To track loading state
 const data = ref({}) // Consider defining a more specific type or interface for your dataconst pdata
@@ -381,6 +402,9 @@ const leagueType = route.params.leagueType
 const leagueYear = route.params.leagueYear
 const leagueStarters = route.params.leagueStarters
 const leagueSize = route.params.leagueSize
+const guid = route.params.guid
+const rosterType = route.params.rosterType
+const leaguesUrl = `/leagues/${leagueYear}/${userName}/${guid}`
 
 const tabsMetadata = {
   '1': { id: '1', source: 'ktc', type: 'power' },
@@ -400,9 +424,11 @@ onMounted(() => {
   const rankType = 'power'
   const contenderRankType = 'contender'
   const leagueId = route.params.leagueId as string
-  if (leagueId && platform && rankType) {
-    fetchLeagueData(leagueId, platform, rankType)
-    contenderFetchLeagueData(leagueId, contenderPlatform, contenderRankType)
+  const guid = route.params.guid as string
+  const rosterType = route.params.rosterType as string
+  if (leagueId && platform && rankType && guid) {
+    fetchLeagueData(leagueId, platform, rankType, guid, rosterType)
+    contenderFetchLeagueData(leagueId, contenderPlatform, contenderRankType, guid, rosterType)
   }
 })
 
@@ -413,11 +439,12 @@ const leagueInfo = reactive({
   leagueSize: leagueSize as string,
   userId: userId,
   userName: userName,
-  description: 'The top professional football league in England.',
   leagueSetting: leagueSetting,
   leagueType: leagueType,
   leagueYear: leagueYear,
-  leagueStarters: leagueStarters
+  leagueStarters: leagueStarters,
+  guid: guid as string,
+  rosterType: rosterType
 })
 
 const goBack = () => {
@@ -427,15 +454,22 @@ const callback: TabsProps['onTabScroll'] = (val) => {
   console.log(val)
 }
 
-const loadLeagueDetails = async (leagueId: string) => {
+const insertLeagueDetials = async (values: any) => {
   isLoading.value = true
   contenderIsLoading.value = true
+  console.log('trying insert rosters')
+  console.log(leagueId)
+  console.log(userId)
+  console.log(guid)
+  console.log(leagueYear)
   try {
-    const response = await axios.post('http://127.0.0.1:8000/league_details', {
-      league_id: leagueId
+    const response = await axios.post('http://127.0.0.1:8000/roster', {
+      league_id: leagueId,
+      user_id: userId,
+      guid: guid,
+      league_year: leagueYear
     })
-    leagueDetails.value = response.data // Store the fetched data
-    console.log(leagueDetails.value)
+
     console.log('League details fetched successfully')
   } catch (error) {
     console.error('Failed to load league details:', error)
@@ -443,6 +477,16 @@ const loadLeagueDetails = async (leagueId: string) => {
   } finally {
     isLoading.value = false // Update loading state
     contenderIsLoading.value = false
+    const platform = 'ktc'
+    const contenderPlatform = 'espn'
+    const rankType = 'power'
+    const contenderRankType = 'contender'
+    const leagueId = route.params.leagueId as string
+    const guid = route.params.guid as string
+    const rosterType = route.params.rosterType as string
+
+    fetchLeagueData(leagueId, platform, rankType, guid, rosterType)
+    contenderFetchLeagueData(leagueId, contenderPlatform, contenderRankType, guid, rosterType)
   }
 }
 
@@ -458,7 +502,9 @@ const fetchTabData = async (tabKey) => {
         params: {
           league_id: leagueInfo.leagueId,
           platform: tabData.source,
-          rank_type: tabData.type
+          rank_type: tabData.type,
+          guid: guid,
+          roster_type: leagueInfo.rosterType
         }
       })
       console.log('calling ', tabData.source)
@@ -485,11 +531,13 @@ const contenderFetchTabData = async (tabKey) => {
         params: {
           league_id: leagueInfo.leagueId,
           platform: tabData.source,
-          rank_type: tabData.type
+          rank_type: tabData.type,
+          guid: guid,
+          roster_type: leagueInfo.rosterType
         }
       })
       console.log('contender calling ', tabData.source)
-      const contenderfilteredData = response.data.filter(
+      const contenderFilteredData = response.data.filter(
         (record) => record.user_id === leagueInfo.userId
       )
       conData.value = contenderFilteredData.length > 0 ? contenderFilteredData[0] : {}
@@ -537,12 +585,12 @@ const getPositionalRanks = (data, leagueInfo) => {
           position.length <= 2
             ? position.toUpperCase()
             : position[0].toUpperCase() + position.slice(1)
-        const color = positionColors[formattedPosition.toUpperCase()] || '#B2BEB5'
+        const color = positionColors[formattedPosition.toUpperCase()] || '#108ee9'
 
         return {
           position: formattedPosition,
-          greyTags: greyTags,
-          greenTags: greenTags,
+          greyTags: Math.round(greyTags * 1.5),
+          greenTags: Math.round(greenTags * 1.5),
           color: color,
           rank: rank
         }
@@ -592,12 +640,12 @@ const contenderGetPositionalRanks = (conData, leagueInfo) => {
         position.length <= 2
           ? position.toUpperCase()
           : position[0].toUpperCase() + position.slice(1)
-      const color = positionColors[formattedPosition.toUpperCase()] || '#B2BEB5'
+      const color = positionColors[formattedPosition.toUpperCase()] || '#108ee9'
 
       return {
         conPosition: formattedPosition,
-        conGreyTags: greyTags,
-        conGreenTags: greenTags,
+        conGreyTags: Math.round(greyTags * 1.5),
+        conGreenTags: Math.round(greenTags * 1.5),
         conColor: color,
         conRank: rank
       }
@@ -612,12 +660,24 @@ const contenderGetPositionalRanks = (conData, leagueInfo) => {
 // Assuming `data` and `leagueInfo` are reactive/ref references
 const contenderPositionalRanks = contenderGetPositionalRanks(conData, leagueInfo)
 
-async function fetchLeagueData(leagueId: string, platform: string, rankType: string) {
+async function fetchLeagueData(
+  leagueId: string,
+  platform: string,
+  rankType: string,
+  guid: string,
+  rosterType: string
+) {
   isLoading.value = true
   console.log('starting league fetch')
   try {
     const response = await axios.get(`http://127.0.0.1:8000/league`, {
-      params: { league_id: leagueId, platform: platform, rank_type: rankType }
+      params: {
+        league_id: leagueId,
+        platform: platform,
+        rank_type: rankType,
+        guid: guid,
+        roster_type: rosterType
+      }
     })
     // data.value = response.data // Update this line based on the structure of your actual data
     const filteredData = response.data.filter((record) => record.user_id === leagueInfo.userId)
@@ -630,12 +690,24 @@ async function fetchLeagueData(leagueId: string, platform: string, rankType: str
     isLoading.value = false
   }
 }
-async function contenderFetchLeagueData(leagueId: string, platform: string, rankType: string) {
+async function contenderFetchLeagueData(
+  leagueId: string,
+  platform: string,
+  rankType: string,
+  guid: string,
+  rosterType: string
+) {
   contenderIsLoading.value = true
   console.log('starting contender league fetch')
   try {
     const response = await axios.get(`http://127.0.0.1:8000/league`, {
-      params: { league_id: leagueId, platform: platform, rank_type: rankType }
+      params: {
+        league_id: leagueId,
+        platform: platform,
+        rank_type: rankType,
+        guid: guid,
+        roster_type: rosterType
+      }
     })
     // data.value = response.data // Update this line based on the structure of your actual data
     const filteredData = response.data.filter((record) => record.user_id === leagueInfo.userId)
@@ -664,9 +736,14 @@ function getColorByRank(rank) {
 
 <style>
 /* Basic styling */
+.layout-content {
+  flex-grow: 1;
+  padding: 0 50px;
+  margin-top: var(--header-height);
+}
 .layout {
   min-height: 100vh;
-  min-width: 1000px;
+  min-width: 800px;
 }
 .custom-tabs .ant-tabs-nav-wrap {
   width: 150px; /* Adjust this value as needed */
@@ -687,10 +764,10 @@ function getColorByRank(rank) {
   min-width: 75px;
   font-weight: bold;
 }
-.grid-container {
+/* .grid-container {
   display: grid;
-  gap: 8px; /* Spacing between rows */
-}
+  gap: 8px; 
+} */
 
 .tag-row {
   display: flex;
@@ -700,32 +777,32 @@ function getColorByRank(rank) {
 .grey-tag {
   background-color: #f0f0f0; /* Grey background */
   border: 0.5px solid gray;
-  margin-right: 4px; /* Spacing between grey tags */
+  margin-right: 2px; /* Spacing between grey tags */
+  max-width: 5px;
 }
 .green-tag {
   background-color: #22de6a; /* Grey background */
   border: 0.5px solid gray;
-  margin-right: 4px; /* Spacing between grey tags */
+  margin-right: 2px; /* Spacing between grey tags */
+  max-width: 5px;
 }
 .gray-tag {
   background-color: rgb(146, 152, 156); /* Grey background */
   border: 0.5px solid gray;
-  margin-right: 4px; /* Spacing between grey tags */
+  margin-right: 2px; /* Spacing between grey tags */
+  max-width: 5px;
 }
 .yellow-tag {
   background-color: rgb(223, 234, 13); /* Grey background */
   border: 0.5px solid gray;
-  margin-right: 4px; /* Spacing between grey tags */
+  margin-right: 2px; /* Spacing between grey tags */
+  max-width: 5px;
 }
 .red-tag {
   background-color: #e55050; /* Grey background */
   border: 0.5px solid gray;
-  margin-right: 4px; /* Spacing between grey tags */
-}
-.blue-tag {
-  background-color: #1135c7; /* Grey background */
-  border: 0.5px solid gray;
-  margin-right: 4px; /* Spacing between grey tags */
+  margin-right: 2px; /* Spacing between grey tags */
+  max-width: 5px;
 }
 .tag-group {
   display: flex;
@@ -742,5 +819,9 @@ function getColorByRank(rank) {
   justify-content: center;
   min-width: 45px;
   display: inline-flex;
+}
+.main-content {
+  max-width: 950px; /* Set your desired max width */
+  padding: 0 50px; /* Keep your existing padding if needed */
 }
 </style>
