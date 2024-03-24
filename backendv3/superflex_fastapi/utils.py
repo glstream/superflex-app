@@ -184,6 +184,12 @@ def get_roster_ids(league_id: str) -> list:
     return [(r["owner_id"], str(r["roster_id"])) for r in roster_meta]
 
 
+def get_full_league(league_id: str):
+    l_res = make_api_call(
+        f"https://api.sleeper.app/v1/league/{league_id}/rosters")
+    return l_res
+
+
 def insert_current_leagues(db, user_data: UserDataModel):
     user_name = user_data.user_name
     league_year = user_data.league_year
@@ -556,7 +562,7 @@ def draft_positions(db, league_id: str, user_id: str, draft_order: list = []) ->
             )
     else:
         if len(draft.get("draft_order", 0)) < len(draft["slot_to_roster_id"]):
-            league = get_full_league(league_id)
+            league = get_league_rosters(league_id)
             empty_team_cnt = 0
             for k, v in draft_slot.items():
                 if int(k) not in list(draft.get("draft_order", {}).values()):
@@ -823,4 +829,5 @@ def player_manager_rosters(
         # insert trades draft Positions
         insert_trades(db, trades, league_id)
     except Exception as e:
+        print('issue', e)
         return e

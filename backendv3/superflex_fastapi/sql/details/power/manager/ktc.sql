@@ -21,6 +21,7 @@ WITH base_players as (SELECT
                     INNER JOIN dynastr.current_leagues cl on lp.league_id = cl.league_id and cl.session_id = 'session_id' 
                     WHERE lp.session_id = 'session_id'
                     and lp.league_id = 'league_id'
+                    and lp.user_id = 'user_id'
                     and pl.player_position IN ('QB', 'RB', 'WR', 'TE' ))
 
                     , base_picks as (SELECT t1.user_id
@@ -51,8 +52,11 @@ WITH base_players as (SELECT
                                         FROM dynastr.draft_picks dp
                                         INNER JOIN dynastr.draft_positions dpos on dp.owner_id = dpos.roster_id and dp.league_id = dpos.league_id
 
-                                        WHERE dpos.league_id = 'league_id'
+                                        WHERE 1=1
+                                        and dpos.league_id = 'league_id'
+                                        and dpos.user_id = 'user_id'
                                         and dp.session_id = 'session_id'
+
                                         ) al 
                                     INNER JOIN dynastr.draft_positions dname on  dname.roster_id = al.roster_id and al.league_id = dname.league_id
                                 ) t1
@@ -240,4 +244,4 @@ WITH base_players as (SELECT
                     left join dynastr.players p on tp.player_id = p.player_id
                     LEFT JOIN dynastr.ktc_player_ranks ktc on tp.ktc_player_id = ktc.ktc_player_id
                     inner join dynastr.managers m on tp.user_id = m.user_id 
-                    order by player_value desc
+                    order by draft_year asc, player_value desc

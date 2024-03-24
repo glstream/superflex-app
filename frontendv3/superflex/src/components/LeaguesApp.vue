@@ -350,12 +350,12 @@ const insertLeagueDetails = async (record, metadata) => {
     console.log(userResponse)
     const userId = userResponse.data.user_id
 
-    const response = await axios.post('http://127.0.0.1:8000/roster', {
-      league_id: record.league_id,
-      user_id: userId,
-      guid: guid,
-      league_year: leagueYear
-    })
+    // const response = await axios.post('http://127.0.0.1:8000/roster', {
+    //   league_id: record.league_id,
+    //   user_id: userId,
+    //   guid: guid,
+    //   league_year: leagueYear
+    // })
 
     router.push(
       `/league/${record.league_id}/${metadata.platform}/${metadata.rankType}/${guid}/${leagueYear}/${userName}/${record.league_name}/${record.roster_type}/${userId}`

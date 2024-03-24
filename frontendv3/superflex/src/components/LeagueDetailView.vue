@@ -1,5 +1,5 @@
 <template>
-  <a-layout class="layout">
+  <a-layout class="layout" style="max-width: 1400px">
     <AppHeader />
     <a-layout-content style="padding: 0 50px">
       <a-breadcrumb style="margin: 16px 0">
@@ -7,274 +7,429 @@
         <a-breadcrumb-item><a :href="leaguesUrl">Leagues</a></a-breadcrumb-item>
         <a-breadcrumb-item>League Details</a-breadcrumb-item>
       </a-breadcrumb>
-      <a-avatar-group maxCount="12" maxPopoverPlacement="bottom" maxPopoverTrigger="hover">
+      <a-avatar-group
+        maxCount="12"
+        maxPopoverPlacement="bottom"
+        maxPopoverTrigger="hover"
+        :max-count="12"
+      >
         <div v-for="user in summaryData" :key="user.user_id">
-          <a-tooltip :title="user.display_name" placement="top">
-            <a :href="`https://sleeper.com/leagues/${leagueInfo.leagueId}/league`" target="_blank">
-              <a-avatar
-                :src="`https://sleepercdn.com/avatars/thumbs/${user.avatar}`"
-                maxPopoverTrigger="hover"
-              />
-            </a>
-          </a-tooltip>
+          <div
+            v-if="user.user_id === leagueInfo.userId"
+            style="position: relative; display: inline-block"
+          >
+            <a-tooltip
+              :title="`${addOrdinalSuffix(user.total_rank)} ${user.display_name}`"
+              placement="top"
+            >
+              <a
+                :href="`https://sleeper.com/leagues/${leagueInfo.leagueId}/league`"
+                target="_blank"
+              >
+                <a-avatar
+                  :src="`https://sleepercdn.com/avatars/thumbs/${user.avatar}`"
+                  maxPopoverTrigger="hover"
+                  :size="45"
+                  style="border: 2px solid gold"
+                />
+              </a>
+            </a-tooltip>
+            <span class="badge-label">
+              {{ addOrdinalSuffix(user.total_rank) }}
+            </span>
+          </div>
+
+          <div v-else>
+            <a-tooltip
+              :title="`${addOrdinalSuffix(user.total_rank)} ${user.display_name}`"
+              placement="top"
+            >
+              <a
+                :href="`https://sleeper.com/leagues/${leagueInfo.leagueId}/league`"
+                target="_blank"
+              >
+                <a-avatar
+                  :src="`https://sleepercdn.com/avatars/thumbs/${user.avatar}`"
+                  maxPopoverTrigger="hover"
+                />
+              </a>
+            </a-tooltip>
+          </div>
         </div>
       </a-avatar-group>
-      <h2>
-        {{ leagueInfo.leagueName }} &bull; {{ leagueInfo.platform }}
-        {{ leagueInfo.rankType }} Rankings
-      </h2>
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <h2>
+          {{ leagueInfo.leagueName }} &bull; {{ leagueInfo.platform }}
+          {{ leagueInfo.rankType }} Rankings
+        </h2>
+        <a-button @click="insertLeagueDetials(leagueInfo.leagueId)" type="primary">
+          Load League
+        </a-button>
+      </div>
+      <a-spin tip="Loading..." :spinning="summaryIsLoading">
+        <TabView>
+          <TabPanel header="Overall">
+            <div class="main-content" style="display: flex; flex-wrap: wrap">
+              <div class="progress-bars-section">
+                <div v-for="user in summaryData" :key="user.user_id" class="user-progress">
+                  <h3>{{ user.display_name }} &bull; {{ addOrdinalSuffix(user.total_rank) }}</h3>
+                  <div class="progress-container">
+                    <a-progress
+                      :percent="100"
+                      :strokeColor="getProgressColor('Total')"
+                      strokeWidth="25"
+                      :show-info="false"
+                    />
 
-      <TabView>
-        <TabPanel header="Overall">
-          <div class="main-content" style="display: flex; flex-wrap: wrap; gap: 20px">
-            <div class="progress-bars-section">
-              <div v-for="user in summaryData" :key="user.user_id" class="user-progress">
-                <h3>{{ user.display_name }}&bull;{{ addOrdinalSuffix(user.total_rank) }}</h3>
-                <div class="progress-container">
-                  <a-progress
-                    :percent="100"
-                    :strokeColor="getProgressColor('Total')"
-                    strokeWidth="25"
-                    :show-info="false"
-                  />
-
-                  <a-progress
-                    :percent="
-                      user.qb_percent +
-                      user.rb_percent +
-                      user.wr_percent +
-                      user.te_percent +
-                      user.picks_percent
-                    "
-                    :strokeColor="getProgressColor('Picks')"
-                    strokeWidth="25"
-                    class="overlay-progress"
-                    :show-info="false"
-                  />
-                  <a-tooltip title="Total Progress Tooltip">
                     <a-progress
                       :percent="
-                        user.qb_percent + user.rb_percent + user.wr_percent + user.te_percent
+                        user.qb_percent +
+                        user.rb_percent +
+                        user.wr_percent +
+                        user.te_percent +
+                        user.picks_percent
                       "
-                      :strokeColor="getProgressColor('TE')"
-                      strokeWidth="25"
-                      class="overlay-progress"
-                      :show-info="false"
-                    />
-                  </a-tooltip>
-
-                  <a-progress
-                    :percent="user.qb_percent + user.rb_percent + user.wr_percent"
-                    :strokeColor="getProgressColor('WR')"
-                    strokeWidth="25"
-                    class="overlay-progress"
-                    :show-info="false"
-                  />
-
-                  <a-progress
-                    :percent="user.qb_percent + user.rb_percent"
-                    :strokeColor="getProgressColor('RB')"
-                    strokeWidth="25"
-                    class="overlay-progress"
-                    :show-info="false"
-                  />
-
-                  <a-tooltip
-                    :title="`QB: ${user.qb_value.toLocaleString()}
-          RB: ${user.rb_value.toLocaleString()}
-          WR: ${user.wr_value.toLocaleString()}
-          TE: ${user.te_value.toLocaleString()}
-          Picks: ${user.picks_value.toLocaleString()}
-          `"
-                    :overlayStyle="{ maxWidth: '95px' }"
-                    ><a-progress
-                      :percent="user.qb_percent"
-                      :strokeColor="getProgressColor('QB')"
-                      strokeWidth="25"
-                      class="overlay-progress"
-                      :show-info="false"
-                    />
-                  </a-tooltip>
-                </div>
-              </div>
-            </div>
-            <div class="table-section" style="flex: 2; min-width: 300px">
-              <a-table
-                :columns="columns"
-                :dataSource="summaryData"
-                row-key="user_id"
-                :pagination="{ pageSize: 20 }"
-                :loading="summaryIsLoading"
-                :expand-column-width="100"
-                style="max-width: 850px"
-              >
-                <template #expandedRowRender="{ record }">
-                  Team Composition:
-                  <div class="card">
-                    <MeterGroup :value="formatGaugeData(record)" />
-                  </div>
-                </template>
-                <template v-slot:totalValueTooltip="{ record }">
-                  <a-tooltip
-                    color="blue"
-                    :title="`Total Value: ${record.total_value.toLocaleString()}`"
-                    ><span>{{ record.total_rank_display }}</span>
-                  </a-tooltip>
-                </template>
-                <template v-slot:starterValueTooltip="{ record }">
-                  <a-tooltip
-                    color="blue"
-                    :overlayStyle="{ maxWidth: '160px' }"
-                    :title="`Starters Value: ${record.starters_value.toLocaleString()} 
-              Starters Avg. ${record.starters_average.toLocaleString()}`"
-                    ><span>{{ record.starters_rank_display }}</span>
-                  </a-tooltip>
-                </template>
-                <template v-slot:qbValueTooltip="{ record }">
-                  <a-tooltip
-                    color="blue"
-                    :overlayStyle="{ maxWidth: '130px' }"
-                    :title="`QB Value: ${record.qb_value.toLocaleString()} 
-              QB Avg. ${record.qb_average.toLocaleString()}`"
-                    ><span>{{ record.qb_rank_display }}</span>
-                  </a-tooltip>
-                </template>
-                <template v-slot:rbValueTooltip="{ record }">
-                  <a-tooltip
-                    color="blue"
-                    :overlayStyle="{ maxWidth: '130px' }"
-                    :title="`RB Value: ${record.rb_value.toLocaleString()} 
-              RB Avg. ${record.rb_average.toLocaleString()}`"
-                    ><span>{{ record.rb_rank_display }}</span>
-                  </a-tooltip>
-                </template>
-                <template v-slot:wrValueTooltip="{ record }">
-                  <a-tooltip
-                    color="blue"
-                    :overlayStyle="{ maxWidth: '130px' }"
-                    :title="`WR Value: ${record.wr_value.toLocaleString()} 
-              WR Avg. ${record.wr_average.toLocaleString()}`"
-                    ><span>{{ record.wr_rank_display }}</span>
-                  </a-tooltip>
-                </template>
-                <template v-slot:teValueTooltip="{ record }">
-                  <a-tooltip
-                    color="blue"
-                    :overlayStyle="{ maxWidth: '130px' }"
-                    :title="`TE Value: ${record.te_value.toLocaleString()} 
-              TE Avg. ${record.te_average.toLocaleString()}`"
-                    ><span>{{ record.te_rank_display }}</span>
-                  </a-tooltip>
-                </template>
-                <template v-slot:picksValueTooltip="{ record }">
-                  <a-tooltip
-                    color="blue"
-                    :title="`Picks Value: ${record.picks_value.toLocaleString()}`"
-                    ><span>{{ record.picks_rank_display }}</span>
-                  </a-tooltip>
-                </template>
-                <template v-slot:benchValueTooltip="{ record }">
-                  <a-tooltip
-                    color="blue"
-                    :overlayStyle="{ maxWidth: '150px' }"
-                    :title="`Bench Value: ${record.bench_value.toLocaleString()} 
-              Bench Avg. ${record.bench_average.toLocaleString()}`"
-                    ><span>{{ record.bench_rank_display }}</span>
-                  </a-tooltip>
-                </template>
-              </a-table>
-            </div>
-          </div>
-        </TabPanel>
-        <TabPanel header="Starters">{{ summaryData }} </TabPanel>
-        <TabPanel header="Players">
-          <div class="card overflow-x-auto">
-            <OrganizationChart :value="data" collapsible>
-              <template #country="slotProps">
-                <div class="flex flex-column align-items-center">
-                  <img
-                    :alt="slotProps.node.label"
-                    src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png"
-                    :class="`w-2rem flag flag-${slotProps.node.data}`"
-                  />
-                  <div class="mt-3 font-medium text-lg">{{ slotProps.node.label }}</div>
-                </div>
-              </template>
-              <template #default="slotProps">
-                <span>{{ slotProps.node.data.label }}</span>
-              </template>
-            </OrganizationChart>
-          </div>
-          <li>{{ detailData }}</li>
-        </TabPanel>
-        <TabPanel header="Manager View"
-          ><div class="progress-bars-section">
-            <div v-if="leagueOwnerData">
-              <h3>
-                {{ leagueOwnerData.display_name }} &bull; Overall
-                {{ addOrdinalSuffix(leagueOwnerData.total_rank) }} &bull; Starters
-                {{ addOrdinalSuffix(leagueOwnerData.starters_rank) }}
-              </h3>
-              <h4>Total Positional Values</h4>
-              <div class="progress-container">
-                <div>
-                  <span>Picks</span>
-                  <span style="float: right"> Max</span>
-                  <a-tooltip
-                    :title="`${addOrdinalSuffix(leagueOwnerData.picks_rank)} ${leagueOwnerData.picks_sum?.toLocaleString()}`"
-                    ><a-progress
-                      :percent="(leagueOwnerData.picks_sum / leagueOwnerData.picks_max_value) * 100"
                       :strokeColor="getProgressColor('Picks')"
+                      strokeWidth="25"
+                      class="overlay-progress"
+                      :show-info="false"
+                    />
+                    <a-tooltip title="Total Progress Tooltip">
+                      <a-progress
+                        :percent="
+                          user.qb_percent + user.rb_percent + user.wr_percent + user.te_percent
+                        "
+                        :strokeColor="getProgressColor('TE')"
+                        strokeWidth="25"
+                        class="overlay-progress"
+                        :show-info="false"
+                      />
+                    </a-tooltip>
+
+                    <a-progress
+                      :percent="user.qb_percent + user.rb_percent + user.wr_percent"
+                      :strokeColor="getProgressColor('WR')"
+                      strokeWidth="25"
+                      class="overlay-progress"
+                      :show-info="false"
+                    />
+
+                    <a-progress
+                      :percent="user.qb_percent + user.rb_percent"
+                      :strokeColor="getProgressColor('RB')"
+                      strokeWidth="25"
+                      class="overlay-progress"
+                      :show-info="false"
+                    />
+
+                    <a-tooltip
+                      :title="`QB: ${user.qb_sum.toLocaleString()}
+          RB: ${user.rb_sum.toLocaleString()}
+          WR: ${user.wr_sum.toLocaleString()}
+          TE: ${user.te_sum.toLocaleString()}
+          Picks: ${user.picks_sum.toLocaleString()}
+          `"
+                      :overlayStyle="{ maxWidth: '95px' }"
+                      ><a-progress
+                        :percent="user.qb_percent"
+                        :strokeColor="getProgressColor('QB')"
+                        strokeWidth="25"
+                        class="overlay-progress"
+                        :show-info="false"
+                      />
+                    </a-tooltip>
+                  </div>
+                </div>
+              </div>
+              <div class="table-section" style="flex: 2; min-width: 300px">
+                <a-table
+                  :columns="columns"
+                  :dataSource="summaryData"
+                  row-key="user_id"
+                  :pagination="{ pageSize: 20 }"
+                  :expand-column-width="100"
+                  style="max-width: 850px"
+                >
+                  <template #expandedRowRender="{ record }">
+                    Team Composition:
+                    <div class="card">
+                      <MeterGroup :value="formatGaugeData(record)" />
+                    </div>
+                  </template>
+                  <template v-slot:totalValueTooltip="{ record }">
+                    <a-tooltip
+                      color="blue"
+                      :title="`Total Value: ${record.total_value.toLocaleString()}`"
+                      ><span>{{ record.total_rank_display }}</span>
+                    </a-tooltip>
+                  </template>
+                  <template v-slot:qbValueTooltip="{ record }">
+                    <a-tooltip
+                      color="blue"
+                      :overlayStyle="{ maxWidth: '130px' }"
+                      :title="`QB Value: ${record.qb_sum.toLocaleString()} 
+              QB Avg. ${record.qb_average.toLocaleString()}`"
+                      ><span>{{ record.qb_rank_display }}</span>
+                    </a-tooltip>
+                  </template>
+                  <template v-slot:rbValueTooltip="{ record }">
+                    <a-tooltip
+                      color="blue"
+                      :overlayStyle="{ maxWidth: '130px' }"
+                      :title="`RB Value: ${record.rb_sum.toLocaleString()} 
+              RB Avg. ${record.rb_average.toLocaleString()}`"
+                      ><span>{{ record.rb_rank_display }}</span>
+                    </a-tooltip>
+                  </template>
+                  <template v-slot:wrValueTooltip="{ record }">
+                    <a-tooltip
+                      color="blue"
+                      :overlayStyle="{ maxWidth: '130px' }"
+                      :title="`WR Value: ${record.wr_sum.toLocaleString()} 
+              WR Avg. ${record.wr_average.toLocaleString()}`"
+                      ><span>{{ record.wr_rank_display }}</span>
+                    </a-tooltip>
+                  </template>
+                  <template v-slot:teValueTooltip="{ record }">
+                    <a-tooltip
+                      color="blue"
+                      :overlayStyle="{ maxWidth: '130px' }"
+                      :title="`TE Value: ${record.te_sum.toLocaleString()} 
+              TE Avg. ${record.te_average.toLocaleString()}`"
+                      ><span>{{ record.te_rank_display }}</span>
+                    </a-tooltip>
+                  </template>
+                  <template v-slot:picksValueTooltip="{ record }">
+                    <a-tooltip
+                      color="blue"
+                      :title="`Picks Value: ${record.picks_sum.toLocaleString()}`"
+                      ><span>{{ record.picks_rank_display }}</span>
+                    </a-tooltip>
+                  </template>
+                  <template v-slot:benchValueTooltip="{ record }">
+                    <a-tooltip
+                      color="blue"
+                      :overlayStyle="{ maxWidth: '150px' }"
+                      :title="`Bench Value: ${record.bench_sum.toLocaleString()} 
+              Bench Avg. ${record.bench_average.toLocaleString()}`"
+                      ><span>{{ record.bench_rank_display }}</span>
+                    </a-tooltip>
+                  </template>
+                </a-table>
+              </div>
+            </div>
+          </TabPanel>
+          <TabPanel header="Starters">
+            <a-table
+              :data-source="summaryData"
+              :columns="starterColumns"
+              :pagination="{ pageSize: 20 }"
+              style="max-width: 1100px"
+              row-key="user_id"
+              ><template #expandedRowRender="{ record }">
+                <div>
+                  <a-row gutter="16">
+                    <a-col :span="6">
+                      <a-card
+                        :title="`Quarterbacks ${addOrdinalSuffix(record.qb_starter_rank)}`"
+                        bordered
+                      >
+                        <div v-for="player in getStarters(record.user_id)" :key="player.sleeper_id">
+                          <p v-if="player.player_position === 'QB'">
+                            {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                          </p>
+                        </div>
+                      </a-card>
+                    </a-col>
+
+                    <a-col :span="6">
+                      <a-card
+                        :title="`Running Backs ${addOrdinalSuffix(record.rb_starter_rank)}`"
+                        bordered
+                      >
+                        <div v-for="player in getStarters(record.user_id)" :key="player.sleeper_id">
+                          <p v-if="player.player_position === 'RB'">
+                            {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                          </p>
+                        </div>
+                      </a-card>
+                    </a-col>
+
+                    <a-col :span="6">
+                      <a-card
+                        :title="`Winde Receivers ${addOrdinalSuffix(record.wr_starter_rank)}`"
+                        bordered
+                      >
+                        <div v-for="player in getStarters(record.user_id)" :key="player.sleeper_id">
+                          <p v-if="player.player_position === 'WR'">
+                            {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                          </p>
+                        </div>
+                      </a-card>
+                    </a-col>
+
+                    <a-col :span="6">
+                      <a-card
+                        :title="`Tight Ends ${addOrdinalSuffix(record.te_starter_rank)}`"
+                        bordered
+                      >
+                        <div v-for="player in getStarters(record.user_id)" :key="player.sleeper_id">
+                          <p v-if="player.player_position === 'TE'">
+                            {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                          </p>
+                        </div>
+                      </a-card>
+                    </a-col>
+                  </a-row>
+                </div>
+              </template>
+              <template v-slot:starterValueTooltip="{ record }">
+                <a-tooltip
+                  color="blue"
+                  :title="`Starters: ${record.starters_sum?.toLocaleString()}`"
+                  ><span>{{ record.starters_rank_display }}</span>
+                </a-tooltip>
+              </template>
+              <template v-slot:qbStarterValueTooltip="{ record }">
+                <a-tooltip color="blue" :title="`QB: ${record.qb_starter_sum?.toLocaleString()}`"
+                  ><span>{{ record.qb_starter_rank_display }}</span>
+                </a-tooltip>
+              </template>
+              <template v-slot:rbStarterValueTooltip="{ record }">
+                <a-tooltip color="blue" :title="`RB: ${record.rb_starter_sum?.toLocaleString()}`"
+                  ><span>{{ record.rb_starter_rank_display }}</span>
+                </a-tooltip>
+              </template>
+              <template v-slot:wrStarterValueTooltip="{ record }">
+                <a-tooltip color="blue" :title="`WR: ${record.wr_starter_sum?.toLocaleString()}`"
+                  ><span>{{ record.wr_starter_rank_display }}</span>
+                </a-tooltip>
+              </template>
+              <template v-slot:teStarterValueTooltip="{ record }">
+                <a-tooltip color="blue" :title="`TE: ${record.te_starter_sum?.toLocaleString()}`"
+                  ><span>{{ record.te_starter_rank_display }}</span>
+                </a-tooltip>
+              </template>
+            </a-table>
+
+            {{ summaryData }}
+          </TabPanel>
+          <TabPanel header="All Players">
+            <a-row :gutter="{ sm: 16 }">
+              <a-col
+                v-for="manager in summaryData"
+                :key="manager.user_id"
+                xs="{24}"
+                sm="{12}"
+                md="{8}"
+                lg="{6}"
+                style="min-width: 300px; max-width: 325px"
+              >
+                <a-card
+                  :title="`${manager.display_name} &bull; ${addOrdinalSuffix(manager.total_rank)} Overall`"
+                >
+                  <div v-for="player in getPlayers(manager.user_id)">
+                    <div v-if="player.player_position === 'QB'">
+                      <a-tag color="blue">{{ player.player_position }}</a-tag>
+                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                    </div>
+                    <div v-if="player.player_position === 'RB'">
+                      <a-tag color="green">{{ player.player_position }}</a-tag>
+                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                    </div>
+                    <div v-if="player.player_position === 'WR'">
+                      <a-tag color="cyan">{{ player.player_position }}</a-tag>
+                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                    </div>
+                    <div v-if="player.player_position === 'TE'">
+                      <a-tag color="orange">{{ player.player_position }}</a-tag>
+                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                    </div>
+                    <div v-if="player.player_position === 'PICKS'">
+                      <a-tag>{{ player.player_position }}</a-tag>
+                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                    </div>
+                  </div>
+                </a-card>
+              </a-col>
+            </a-row>
+            <li>{{ detailData }}</li>
+          </TabPanel>
+          <TabPanel header="Manager View">
+            <div class="progress-bars-section">
+              <div v-if="leagueOwnerData">
+                <h3>
+                  {{ leagueOwnerData.display_name }} &bull; Overall
+                  {{ addOrdinalSuffix(leagueOwnerData.total_rank) }} &bull; Starters
+                  {{ addOrdinalSuffix(leagueOwnerData.starters_rank) }}
+                </h3>
+                <h4>Overall Positional Values</h4>
+                <div class="progress-container">
+                  <div>
+                    <span>Picks</span>
+                    <span style="float: right"> Max</span>
+                    <a-tooltip
+                      :title="`${addOrdinalSuffix(leagueOwnerData.picks_rank)} ${leagueOwnerData.picks_sum?.toLocaleString()}`"
+                      ><a-progress
+                        :percent="
+                          (leagueOwnerData.picks_sum / leagueOwnerData.picks_max_value) * 100
+                        "
+                        :strokeColor="getProgressColor('Picks')"
+                        strokeWidth="15"
+                        :format="
+                          (percent) => `${leagueOwnerData.picks_max_value?.toLocaleString()}`
+                        "
+                      />
+                    </a-tooltip>
+                  </div>
+                  <span>TE</span>
+                  <a-tooltip
+                    :title="`${addOrdinalSuffix(leagueOwnerData.te_rank)} ${leagueOwnerData.te_sum?.toLocaleString()}`"
+                    ><a-progress
+                      :percent="(leagueOwnerData.te_sum / leagueOwnerData.te_max_value) * 100"
+                      :strokeColor="getProgressColor('TE')"
                       strokeWidth="15"
-                      :format="(percent) => `${leagueOwnerData.picks_max_value?.toLocaleString()}`"
+                      :format="(percent) => `${leagueOwnerData.te_max_value?.toLocaleString()}`"
+                    />
+                  </a-tooltip>
+                  <span>WR</span>
+                  <a-tooltip
+                    :title="`${addOrdinalSuffix(leagueOwnerData.wr_rank)} ${leagueOwnerData.wr_sum?.toLocaleString()}`"
+                    ><a-progress
+                      :percent="(leagueOwnerData.wr_sum / leagueOwnerData.wr_max_value) * 100"
+                      :strokeColor="getProgressColor('WR')"
+                      strokeWidth="15"
+                      :format="(percent) => `${leagueOwnerData.wr_max_value?.toLocaleString()}`"
+                    />
+                  </a-tooltip>
+                  <span>RB</span>
+                  <a-tooltip
+                    :title="`${addOrdinalSuffix(leagueOwnerData.rb_rank)} ${leagueOwnerData.rb_sum?.toLocaleString()}`"
+                    ><a-progress
+                      :percent="(leagueOwnerData.rb_sum / leagueOwnerData.rb_max_value) * 100"
+                      :strokeColor="getProgressColor('RB')"
+                      strokeWidth="15"
+                      :format="(percent) => `${leagueOwnerData.rb_max_value?.toLocaleString()}`"
+                    />
+                  </a-tooltip>
+                  <span>QB</span>
+                  <a-tooltip
+                    :title="`${addOrdinalSuffix(leagueOwnerData.qb_rank)} ${leagueOwnerData.qb_sum?.toLocaleString()}`"
+                    ><a-progress
+                      :percent="(leagueOwnerData.qb_sum / leagueOwnerData.qb_max_value) * 100"
+                      :strokeColor="getProgressColor('QB')"
+                      strokeWidth="15"
+                      :format="(percent) => `${leagueOwnerData.qb_max_value?.toLocaleString()}`"
                     />
                   </a-tooltip>
                 </div>
-                <span>TE</span>
-                <a-tooltip
-                  :title="`${addOrdinalSuffix(leagueOwnerData.te_rank)} ${leagueOwnerData.te_sum?.toLocaleString()}`"
-                  ><a-progress
-                    :percent="(leagueOwnerData.te_sum / leagueOwnerData.te_max_value) * 100"
-                    :strokeColor="getProgressColor('TE')"
-                    strokeWidth="15"
-                    :format="(percent) => `${leagueOwnerData.te_max_value?.toLocaleString()}`"
-                  />
-                </a-tooltip>
-                <span>WR</span>
-                <a-tooltip
-                  :title="`${addOrdinalSuffix(leagueOwnerData.wr_rank)} ${leagueOwnerData.wr_sum?.toLocaleString()}`"
-                  ><a-progress
-                    :percent="(leagueOwnerData.wr_sum / leagueOwnerData.wr_max_value) * 100"
-                    :strokeColor="getProgressColor('WR')"
-                    strokeWidth="15"
-                    :format="(percent) => `${leagueOwnerData.wr_max_value?.toLocaleString()}`"
-                  />
-                </a-tooltip>
-                <span>RB</span>
-                <a-tooltip
-                  :title="`${addOrdinalSuffix(leagueOwnerData.rb_rank)} ${leagueOwnerData.rb_sum?.toLocaleString()}`"
-                  ><a-progress
-                    :percent="(leagueOwnerData.rb_sum / leagueOwnerData.rb_max_value) * 100"
-                    :strokeColor="getProgressColor('RB')"
-                    strokeWidth="15"
-                    :format="(percent) => `${leagueOwnerData.rb_max_value?.toLocaleString()}`"
-                  />
-                </a-tooltip>
-                <span>QB</span>
-                <a-tooltip
-                  :title="`${addOrdinalSuffix(leagueOwnerData.qb_rank)} ${leagueOwnerData.qb_sum?.toLocaleString()}`"
-                  ><a-progress
-                    :percent="(leagueOwnerData.qb_sum / leagueOwnerData.qb_max_value) * 100"
-                    :strokeColor="getProgressColor('QB')"
-                    strokeWidth="15"
-                    :format="(percent) => `${leagueOwnerData.qb_max_value?.toLocaleString()}`"
-                  />
-                </a-tooltip>
               </div>
             </div>
-          </div>
-        </TabPanel>
-      </TabView>
+          </TabPanel>
+          <TabPanel header="single Manager"> {{ singleManagerData }} ///// {{ data }}</TabPanel>
+          <TabPanel header="Best Available"></TabPanel>
+        </TabView>
+      </a-spin>
     </a-layout-content>
     <AppFooter />
   </a-layout>
@@ -289,7 +444,6 @@ import MeterGroup from 'primevue/metergroup'
 import Card from 'primevue/card'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
-import OrganizationChart from 'primevue/organizationchart'
 
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
@@ -308,6 +462,7 @@ const guid = route.params.guid
 const platform = route.params.platform
 const rankType = route.params.rankType
 const userId = route.params.userId
+const rosterType = route.params.rosterType
 
 // Sample league information
 const leagueInfo = reactive({
@@ -318,97 +473,132 @@ const leagueInfo = reactive({
   guid: guid as string,
   rankType: rankType as string,
   platform: platform as string,
-  userId: userId as string
+  userId: userId as string,
+  rosterType: rosterType as string
 })
 
-const summaryData = ref([]) // Consider defining a more specific type or interface for your data
-const detailData = ref({}) // Consider defining a more specific type or interface for your data
+const summaryData = ref([])
+const detailData = ref([{}])
+const singleManagerData = ref(null)
 
 const leaguesUrl = `/leagues/${leagueYear}/${userName}/${guid}`
 
+const isLoading = ref(false)
 const summaryIsLoading = ref(false)
 const detailIsLoading = ref(false)
-const data = ref({
-  key: '0',
-  type: 'country',
-  label: 'Argentina',
-  data: 'ar',
-  children: [
-    {
-      key: '0_0',
-      type: 'country',
-      label: 'Argentina',
-      data: 'ar',
-      children: [
-        {
-          key: '0_0_0',
-          type: 'country',
-          label: 'Argentina',
-          data: 'ar'
-        },
-        {
-          key: '0_0_1',
-          type: 'country',
-          label: 'Croatia',
-          data: 'hr'
-        }
-      ]
-    },
-    {
-      key: '0_1',
-      type: 'country',
-      label: 'France',
-      data: 'fr',
-      children: [
-        {
-          key: '0_1_0',
-          type: 'country',
-          label: 'France',
-          data: 'fr'
-        },
-        {
-          key: '0_1_1',
-          type: 'country',
-          label: 'Morocco',
-          data: 'ma'
-        }
-      ]
-    }
-  ]
-})
 
 const selection = ref({})
 function formatGaugeData(record) {
   // Assuming 'record' has a property 'usedSpace' you want to display
   return [
     {
-      label: `QB: ${record.qb_value.toLocaleString()}`,
+      label: `QB: ${record.qb_sum.toLocaleString()}`,
       color: 'rgb(39, 125, 161)',
       value: record.qb_percent,
       total: record.qb_value
     },
     {
-      label: `RB: ${record.rb_value.toLocaleString()}`,
+      label: `RB: ${record.rb_sum.toLocaleString()}`,
       color: 'rgb(144, 190, 109)',
       value: record.rb_percent
     },
     {
-      label: `WR: ${record.wr_value.toLocaleString()}`,
+      label: `WR: ${record.wr_sum.toLocaleString()}`,
       color: 'rgb(67, 170, 139)',
       value: record.wr_percent
     },
     {
-      label: `TE: ${record.te_value.toLocaleString()}`,
+      label: `TE: ${record.te_sum.toLocaleString()}`,
       color: 'rgb(249, 132, 74)',
       value: record.te_percent
     },
     {
-      label: `Picks: ${record.picks_value.toLocaleString()}`,
+      label: `Picks: ${record.picks_sum.toLocaleString()}`,
       color: 'rgba(189, 195, 199, 0.6)',
       value: record.picks_percent
     }
   ]
 }
+
+const starterColumns: Column[] = [
+  {
+    title: '',
+    dataIndex: 'display_name',
+    key: 'display_name',
+    align: 'center'
+  },
+  {
+    title: 'Starters',
+    dataIndex: 'starters_rank_display',
+    key: 'starters_rank_display',
+    align: 'center',
+    slots: { customRender: 'starterValueTooltip' },
+    customCell: (record: any) => ({
+      style: getCellStyle(record.starters_rank)
+    }),
+    sorter: {
+      compare: (a, b) => a.starters_rank - b.starters_rank,
+      multiple: 2
+    }
+  },
+
+  {
+    title: 'QB',
+    dataIndex: 'qb_starter_rank_display',
+    key: 'qb_starter_rank',
+    align: 'center',
+    slots: { customRender: 'qbStarterValueTooltip' },
+    customCell: (record: any) => ({
+      style: getCellStyle(record.qb_starter_rank)
+    }),
+    sorter: {
+      compare: (a, b) => a.qb_starter_rank - b.qb_starter_rank,
+      multiple: 1
+    }
+  },
+  {
+    title: 'RB',
+    dataIndex: 'rb_starter_rank_display',
+    key: 'rb_starter_rank',
+    align: 'center',
+    slots: { customRender: 'rbStarterValueTooltip' },
+    customCell: (record: any) => ({
+      style: getCellStyle(record.rb_starter_rank)
+    }),
+    sorter: {
+      compare: (a, b) => a.rb_starter_rank - b.rb_starter_rank,
+      multiple: 1
+    }
+  },
+  {
+    title: 'WR',
+    dataIndex: 'wr_starter_rank_display',
+    key: 'wr_starter_rank',
+    align: 'center',
+    slots: { customRender: 'wrStarterValueTooltip' },
+    customCell: (record: any) => ({
+      style: getCellStyle(record.wr_starter_rank)
+    }),
+    sorter: {
+      compare: (a, b) => a.wr_starter_rank - b.wr_starter_rank,
+      multiple: 1
+    }
+  },
+  {
+    title: 'TE',
+    dataIndex: 'te_starter_rank_display',
+    key: 'te_starter_rank',
+    align: 'center',
+    slots: { customRender: 'teStarterValueTooltip' },
+    customCell: (record: any) => ({
+      style: getCellStyle(record.te_starter_rank)
+    }),
+    sorter: {
+      compare: (a, b) => a.te_starter_rank - b.te_starter_rank,
+      multiple: 1
+    }
+  }
+]
 const columns: Column[] = [
   {
     title: '',
@@ -427,21 +617,7 @@ const columns: Column[] = [
     }),
     sorter: {
       compare: (a, b) => a.total_rank - b.total_rank,
-      multiple: 1
-    }
-  },
-  {
-    title: 'Starters',
-    dataIndex: 'starters_rank',
-    key: 'starters_rank',
-    align: 'center',
-    slots: { customRender: 'starterValueTooltip' },
-    customCell: (record: any) => ({
-      style: getCellStyle(record.starters_rank)
-    }),
-    sorter: {
-      compare: (a, b) => a.starters_rank - b.starters_rank,
-      multiple: 2
+      multiple: 10
     }
   },
   {
@@ -559,6 +735,59 @@ function getProgressColor(position: string): string {
     return '#fff'
   }
 }
+
+const getStarters = (userId) => {
+  const interimData = detailData.value
+    .filter((item) => item.user_id === userId)
+    .filter((item) => item.fantasy_designation === 'STARTER')
+    .filter((item) => item.player_position != 'PICKS')
+  return interimData
+}
+
+const getPlayers = (userId) => {
+  const interimData = detailData.value.filter((item) => item.user_id === userId)
+  return interimData
+}
+
+const insertLeagueDetials = async (values: any) => {
+  isLoading.value = true
+  detailIsLoading.value = true
+  summaryIsLoading.value = true
+  console.log('trying insert rosters')
+  console.log(leagueId)
+  console.log(userId)
+  console.log(guid)
+  console.log(leagueYear)
+  try {
+    const response = await axios.post('http://127.0.0.1:8000/roster', {
+      league_id: leagueInfo.leagueId,
+      user_id: leagueInfo.userId,
+      guid: leagueInfo.guid,
+      league_year: leagueInfo.leagueYear
+    })
+
+    console.log('Rosters loading...')
+  } catch (error) {
+    console.error('Error loading rosters', error)
+    // Optionally, update leagueDetails to indicate an error or show an error message
+  } finally {
+    isLoading.value = false // Update loading state
+    fetchSummaryData(
+      leagueInfo.leagueId,
+      leagueInfo.platform,
+      leagueInfo.rankType,
+      leagueInfo.guid,
+      leagueInfo.rosterType
+    )
+    fetchDetailData(
+      leagueInfo.leagueId,
+      leagueInfo.platform,
+      leagueInfo.rankType,
+      leagueInfo.guid,
+      leagueInfo.rosterType
+    )
+  }
+}
 async function fetchSummaryData(
   leagueId: string,
   platform: string,
@@ -590,6 +819,10 @@ async function fetchSummaryData(
         rb_rank_display: addOrdinalSuffix(item.rb_rank),
         wr_rank_display: addOrdinalSuffix(item.wr_rank),
         te_rank_display: addOrdinalSuffix(item.te_rank),
+        qb_starter_rank_display: addOrdinalSuffix(item.qb_starter_rank),
+        rb_starter_rank_display: addOrdinalSuffix(item.rb_starter_rank),
+        wr_starter_rank_display: addOrdinalSuffix(item.wr_starter_rank),
+        te_starter_rank_display: addOrdinalSuffix(item.te_starter_rank),
         picks_rank_display: addOrdinalSuffix(item.picks_rank),
         bench_rank_display: addOrdinalSuffix(item.bench_rank),
         total_percent: (item.total_value / maxTotalValue) * 100,
@@ -640,6 +873,10 @@ const leagueOwnerData = computed(() => {
     picks_max_value: picksMaxValue,
     qb_median: qbMedian
   }
+})
+
+const starterData = computed(() => {
+  return detailData.value.filter((item) => item.fantasy_designation === 'STARTER')
 })
 
 async function fetchDetailData(
@@ -720,13 +957,23 @@ table {
   top: 0;
   margin-bottom: 10px;
 }
+.badge-label {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 0 4px;
+  border-radius: 10px;
+}
 /* Responsive styles */
 @media (min-width: 992px) {
   .main-content {
     flex-direction: row; /* Set flex direction to row for larger screens */
   }
   .progress-bars-section {
-    max-width: 40%; /* Limit width of progress bars section */
+    max-width: 35%;
   }
   .table-section {
     max-width: 60%; /* Limit width of table section */

@@ -37,12 +37,6 @@ def user_details(user_data: UserDataModel, db=Depends(get_db)):
     return insert_current_leagues(db, user_data)
 
 
-@app.post("/league_details")
-def league_details(league_data: LeagueDataModel, db=Depends(get_db)):
-    print('attempt')
-    return insert_league(db, league_data)
-
-
 @app.post("/roster")
 def roster(roster_data: RosterDataModel, db=Depends(get_db)):
     print('attempt rosters')
