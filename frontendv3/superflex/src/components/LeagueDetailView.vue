@@ -323,31 +323,36 @@
                 sm="{12}"
                 md="{8}"
                 lg="{6}"
-                style="min-width: 300px; max-width: 325px"
+                style="min-width: 300px; max-width: 315px"
               >
                 <a-card
                   :title="`${manager.display_name} &bull; ${addOrdinalSuffix(manager.total_rank)} Overall`"
                 >
-                  <div v-for="player in getPlayers(manager.user_id)">
+                  <div v-for="(player, index) in getPlayers(manager.user_id)">
                     <div v-if="player.player_position === 'QB'">
                       <a-tag color="blue">{{ player.player_position }}</a-tag>
-                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                      {{ index + 1 }}. {{ player.full_name }} &bull;
+                      {{ player.player_value.toLocaleString() }}
                     </div>
                     <div v-if="player.player_position === 'RB'">
                       <a-tag color="green">{{ player.player_position }}</a-tag>
-                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                      {{ index + 1 }}. {{ player.full_name }} &bull;
+                      {{ player.player_value.toLocaleString() }}
                     </div>
                     <div v-if="player.player_position === 'WR'">
                       <a-tag color="cyan">{{ player.player_position }}</a-tag>
-                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                      {{ index + 1 }}. {{ player.full_name }} &bull;
+                      {{ player.player_value.toLocaleString() }}
                     </div>
                     <div v-if="player.player_position === 'TE'">
                       <a-tag color="orange">{{ player.player_position }}</a-tag>
-                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                      {{ index + 1 }}. {{ player.full_name }} &bull;
+                      {{ player.player_value.toLocaleString() }}
                     </div>
                     <div v-if="player.player_position === 'PICKS'">
                       <a-tag>{{ player.player_position }}</a-tag>
-                      {{ player.full_name }} &bull; {{ player.player_value.toLocaleString() }}
+                      {{ index + 1 }}. {{ player.full_name }} &bull;
+                      {{ player.player_value.toLocaleString() }}
                     </div>
                   </div>
                 </a-card>
@@ -897,7 +902,8 @@ async function fetchDetailData(
         roster_type: rosterType
       }
     })
-    detailData.value = response.data // Update this line based on the structure of your actual data
+
+    detailData.value = response.data
   } catch (error) {
     console.error('There was an error fetching the leagues detail data:', error)
     message.error('Failed to fetch league detail data.')

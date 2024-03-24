@@ -190,7 +190,19 @@ WITH base_players as (SELECT
                                             
                     SELECT tp.user_id
                     ,m.display_name
-                    ,coalesce(ktc.player_full_name, tp.picks_player_name, p.full_name) as full_name
+,COALESCE(
+  CASE 
+    WHEN tp.draft_year IS NOT NULL THEN
+      REPLACE(
+        REPLACE(ktc.player_full_name, 'Round ', ''), 
+        ' Pick ', '.'
+      )
+    ELSE
+      ktc.player_full_name
+  END, 
+  tp.picks_player_name, 
+  p.full_name
+) AS full_name
                     , tp.draft_year
                     ,ktc.slug as hyper_link
                     ,p.team
