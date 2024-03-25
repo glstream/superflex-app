@@ -151,3 +151,26 @@ def league_detail(league_id: str, platform: str, rank_type: str, guid: str, rost
     cursor_.close()
 
     return db_resp_obj
+
+
+@app.get("/best_avialable")
+def best_avialable(league_id: str, platform: str, rank_type: str, guid: str, roster_type: str, db: str = Depends(get_db)):
+
+    cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
+    session_id = guid
+    league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+
+    with open(Path.cwd() / "sql" / "best_available" / f"{rank_type}" / f"{platform}.sql",
+              "r",
+              ) as ba_sql_file:
+        ba_sql = (
+            ba_sql_file.read()
+            .replace("'session_id'", f"'{session_id}'")
+            .replace("'league_id'", f"'{league_id}'")
+            .replace("league_type", f"{league_type}")
+        )
+    cursor_.execute(ba_sql)
+    db_resp_obj = cursor_.fetchall()
+    cursor_.close()
+
+    return db_resp_obj

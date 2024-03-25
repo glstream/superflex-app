@@ -9,8 +9,7 @@ import PrimeVue from 'primevue/config'
 
 import 'primevue/resources/themes/aura-light-green/theme.css'
 import 'primevue/resources/primevue.min.css' /* Deprecated */
-import './style.css'
-import './flags.css'
+import { Chart, registerables } from 'chart.js'
 
 import App from './App.vue'
 import router from './router'

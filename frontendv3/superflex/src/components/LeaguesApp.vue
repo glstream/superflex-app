@@ -18,12 +18,9 @@
         >
           <!-- Custom cell template for league names with click handler -->
           <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'league_name'">
-              <a @click.prevent="handleClick(record)">
-                {{ record.league_name }}
-              </a>
-            </template>
+            <template v-if="column.key === 'league_name'"> </template>
           </template>
+
           <!-- Expanded row template for detailed league information -->
           <template #expandedRowRender="{ record }">
             <div class="expanded-row-content">
@@ -59,7 +56,9 @@
                             "
                             >Details</a-button
                           >
-                          <a-button type="default" size="small">↻</a-button>
+                          <a-button type="primary" @click.prevent="handleClick(record)" size="small"
+                            >Summary</a-button
+                          >
                         </span>
                       </li>
                       <li class="rank-item">
@@ -76,7 +75,9 @@
                           <a-button type="primary" size="small" class="league-load-buttons"
                             >Details</a-button
                           >
-                          <a-button type="default" size="small">↻</a-button>
+                          <a-button type="primary" @click.prevent="handleClick(record)" size="small"
+                            >Summary</a-button
+                          >
                         </span>
                       </li>
                       <li class="rank-item">
@@ -94,7 +95,9 @@
                           <a-button type="primary" size="small" class="league-load-buttons"
                             >Details</a-button
                           >
-                          <a-button type="default" size="small">↻</a-button>
+                          <a-button type="primary" @click.prevent="handleClick(record)" size="small"
+                            >Summary</a-button
+                          >
                         </span>
                       </li>
                       <li class="rank-item">
@@ -112,7 +115,9 @@
                           <a-button type="primary" size="small" class="league-load-buttons"
                             >Details</a-button
                           >
-                          <a-button type="default" size="small">↻</a-button>
+                          <a-button type="primary" @click.prevent="handleClick(record)" size="small"
+                            >Summary</a-button
+                          >
                         </span>
                       </li>
                     </ul>
@@ -134,7 +139,9 @@
                         <a-button type="primary" size="small" class="league-load-buttons"
                           >Details</a-button
                         >
-                        <a-button type="default" size="small">↻</a-button>
+                        <a-button type="primary" @click.prevent="handleClick(record)" size="small"
+                          >Summary</a-button
+                        >
                       </span>
                     </li>
                     <li class="rank-item">
@@ -151,7 +158,9 @@
                         <a-button type="primary" size="small" class="league-load-buttons"
                           >Details</a-button
                         >
-                        <a-button type="default" size="small">↻</a-button>
+                        <a-button type="primary" @click.prevent="handleClick(record)" size="small"
+                          >Summary</a-button
+                        >
                       </span>
                     </li>
                     <li class="rank-item">
@@ -168,7 +177,9 @@
                         <a-button type="primary" size="small" class="league-load-buttons"
                           >Details</a-button
                         >
-                        <a-button type="default" size="small">↻</a-button>
+                        <a-button type="primary" @click.prevent="handleClick(record)" size="small"
+                          >Summary</a-button
+                        >
                       </span>
                     </li>
                     <li class="rank-item">
@@ -185,7 +196,9 @@
                         <a-button type="primary" size="small" class="league-load-buttons"
                           >Details</a-button
                         >
-                        <a-button type="default" size="small">↻</a-button>
+                        <a-button type="primary" @click.prevent="handleClick(record)" size="small"
+                          >Summary</a-button
+                        >
                       </span>
                     </li>
                   </ul>
@@ -286,7 +299,8 @@ const columns = [
       compare: (a, b) => a.starter_cnt - b.starter_cnt,
       multiple: 2
     }
-  }
+  },
+  { title: 'Load', dataIndex: '', key: 'starter_cnt' }
 ]
 
 // configs
@@ -416,7 +430,7 @@ const handleClick = (record) => {
 }
 
 .league-load-buttons {
-  margin-right: 25px;
+  margin-right: 5px;
 }
 .site-layout-content {
   min-height: 280px;

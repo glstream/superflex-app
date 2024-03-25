@@ -1,7 +1,7 @@
 <template>
   <a-layout class="layout" style="max-width: 1400px">
     <AppHeader />
-    <a-layout-content style="padding: 0 50px">
+    <a-layout-content style="padding: 0 5px">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
         <a-breadcrumb-item><a :href="leaguesUrl">Leagues</a></a-breadcrumb-item>
@@ -314,7 +314,7 @@
 
             {{ summaryData }}
           </TabPanel>
-          <TabPanel header="All Players">
+          <TabPanel header="Players">
             <a-row :gutter="{ sm: 16 }">
               <a-col
                 v-for="manager in summaryData"
@@ -330,27 +330,37 @@
                 >
                   <div v-for="(player, index) in getPlayers(manager.user_id)">
                     <div v-if="player.player_position === 'QB'">
-                      <a-tag color="blue">{{ player.player_position }}</a-tag>
+                      <a-tag :style="getPositionTag(player.player_position)">{{
+                        player.player_position
+                      }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{ player.player_value.toLocaleString() }}
                     </div>
                     <div v-if="player.player_position === 'RB'">
-                      <a-tag color="green">{{ player.player_position }}</a-tag>
+                      <a-tag :style="getPositionTag(player.player_position)">{{
+                        player.player_position
+                      }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{ player.player_value.toLocaleString() }}
                     </div>
                     <div v-if="player.player_position === 'WR'">
-                      <a-tag color="cyan">{{ player.player_position }}</a-tag>
+                      <a-tag :style="getPositionTag(player.player_position)">{{
+                        player.player_position
+                      }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{ player.player_value.toLocaleString() }}
                     </div>
                     <div v-if="player.player_position === 'TE'">
-                      <a-tag color="orange">{{ player.player_position }}</a-tag>
+                      <a-tag :style="getPositionTag(player.player_position)">{{
+                        player.player_position
+                      }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{ player.player_value.toLocaleString() }}
                     </div>
                     <div v-if="player.player_position === 'PICKS'">
-                      <a-tag>{{ player.player_position }}</a-tag>
+                      <a-tag :style="getPositionTag(player.player_position)">{{
+                        player.player_position
+                      }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{ player.player_value.toLocaleString() }}
                     </div>
@@ -361,78 +371,198 @@
             <li>{{ detailData }}</li>
           </TabPanel>
           <TabPanel header="Manager View">
-            <div class="progress-bars-section">
-              <div v-if="leagueOwnerData">
-                <h3>
-                  {{ leagueOwnerData.display_name }} &bull; Overall
-                  {{ addOrdinalSuffix(leagueOwnerData.total_rank) }} &bull; Starters
-                  {{ addOrdinalSuffix(leagueOwnerData.starters_rank) }}
-                </h3>
-                <h4>Overall Positional Values</h4>
-                <div class="progress-container">
-                  <div>
-                    <span>Picks</span>
+            <div v-for="manager in summaryData" :key="manager.user_id">
+              <div v-if="manager.user_id === leagueInfo.userId">
+                <a-row :gutter="{ xs: 8, sm: 16, md: 24 }">
+                  <div v-for="position in ['QB', 'RB', 'WR', 'TE', 'PICKS']" :key="position">
+                    <a-col :key="position" xs="24" sm="12" md="8" lg="6">
+                      <a-card>
+                        <template #title>
+                          <a-tag :style="getPositionTag(position)" size="large">{{
+                            position
+                          }}</a-tag>
+                        </template>
+                        <div
+                          v-for="(player, index) in getPlayers(manager.user_id)"
+                          :key="player.full_name"
+                        >
+                          <div v-if="player.player_position === position">
+                            {{ index + 1 }}. {{ player.full_name }} &bull;
+                            {{ player.player_value.toLocaleString() }}
+                          </div>
+                        </div>
+                      </a-card>
+                    </a-col>
+                  </div>
+                </a-row>
+              </div>
+            </div>
+            <div class="chart-container">
+              <h3>{{ leagueInfo.userName }} &bull; Age and Value Chart</h3>
+              <Chart type="bubble" :data="chartData" :options="chartOptions" />
+            </div>
+            <div class="progress-bars-section-mv">
+              <a-row :gutter="{ xs: 8, sm: 16, md: 24, lg: 32 }" class="progress-bars-section-mv">
+                <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+                  <div class="progress-bar-group-mv" v-if="leagueOwnerData">
+                    <h3>
+                      Overall
+                      {{ addOrdinalSuffix(leagueOwnerData.total_rank) }}
+                    </h3>
+                    <span>QB</span>
                     <span style="float: right"> Max</span>
                     <a-tooltip
-                      :title="`${addOrdinalSuffix(leagueOwnerData.picks_rank)} ${leagueOwnerData.picks_sum?.toLocaleString()}`"
+                      :title="`${addOrdinalSuffix(leagueOwnerData.qb_rank)} ${leagueOwnerData.qb_sum?.toLocaleString()}`"
+                      ><a-progress
+                        :percent="(leagueOwnerData.qb_sum / leagueOwnerData.qb_max_value) * 100"
+                        :strokeColor="getProgressColor('QB')"
+                        strokeWidth="15"
+                        :format="(percent) => `${leagueOwnerData.qb_max_value?.toLocaleString()}`"
+                      />
+                    </a-tooltip>
+                    <span>RB</span>
+                    <a-tooltip
+                      :title="`${addOrdinalSuffix(leagueOwnerData.rb_rank)} ${leagueOwnerData.rb_sum?.toLocaleString()}`"
+                      ><a-progress
+                        :percent="(leagueOwnerData.rb_sum / leagueOwnerData.rb_max_value) * 100"
+                        :strokeColor="getProgressColor('RB')"
+                        strokeWidth="15"
+                        :format="(percent) => `${leagueOwnerData.rb_max_value?.toLocaleString()}`"
+                      />
+                    </a-tooltip>
+                    <span>WR</span>
+                    <a-tooltip
+                      :title="`${addOrdinalSuffix(leagueOwnerData.wr_rank)} ${leagueOwnerData.wr_sum?.toLocaleString()}`"
+                      ><a-progress
+                        :percent="(leagueOwnerData.wr_sum / leagueOwnerData.wr_max_value) * 100"
+                        :strokeColor="getProgressColor('WR')"
+                        strokeWidth="15"
+                        :format="(percent) => `${leagueOwnerData.wr_max_value?.toLocaleString()}`"
+                      />
+                    </a-tooltip>
+                    <span>TE</span>
+                    <a-tooltip
+                      :title="`${addOrdinalSuffix(leagueOwnerData.te_rank)} ${leagueOwnerData.te_sum?.toLocaleString()}`"
+                      ><a-progress
+                        :percent="(leagueOwnerData.te_sum / leagueOwnerData.te_max_value) * 100"
+                        :strokeColor="getProgressColor('TE')"
+                        strokeWidth="15"
+                        :format="(percent) => `${leagueOwnerData.te_max_value?.toLocaleString()}`"
+                      />
+                    </a-tooltip>
+                    <div>
+                      <span>Picks</span>
+                      <a-tooltip
+                        :title="`${addOrdinalSuffix(leagueOwnerData.picks_rank)} ${leagueOwnerData.picks_sum?.toLocaleString()}`"
+                        ><a-progress
+                          :percent="
+                            (leagueOwnerData.picks_sum / leagueOwnerData.picks_max_value) * 100
+                          "
+                          :strokeColor="getProgressColor('Picks')"
+                          strokeWidth="15"
+                          :format="
+                            (percent) => `${leagueOwnerData.picks_max_value?.toLocaleString()}`
+                          "
+                        />
+                      </a-tooltip>
+                    </div>
+                  </div>
+                </a-col>
+                <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+                  <div class="progress-bar-group-mv" v-if="leagueOwnerData">
+                    <h3>
+                      Starters
+                      {{ addOrdinalSuffix(leagueOwnerData.starters_rank) }}
+                    </h3>
+                    <span>QB</span>
+                    <a-tooltip
+                      :title="`${addOrdinalSuffix(leagueOwnerData.qb_starter_rank)} ${leagueOwnerData.qb_starter_sum?.toLocaleString()}`"
                       ><a-progress
                         :percent="
-                          (leagueOwnerData.picks_sum / leagueOwnerData.picks_max_value) * 100
+                          (leagueOwnerData.qb_starter_sum / leagueOwnerData.qb_max_starter_value) *
+                          100
                         "
-                        :strokeColor="getProgressColor('Picks')"
+                        :strokeColor="getProgressColor('QB')"
                         strokeWidth="15"
                         :format="
-                          (percent) => `${leagueOwnerData.picks_max_value?.toLocaleString()}`
+                          (percent) => `${leagueOwnerData.qb_max_starter_value?.toLocaleString()}`
+                        "
+                      />
+                    </a-tooltip>
+                    <span>RB</span>
+                    <a-tooltip
+                      :title="`${addOrdinalSuffix(leagueOwnerData.rb_starter_rank)} ${leagueOwnerData.rb_starter_sum?.toLocaleString()}`"
+                      ><a-progress
+                        :percent="
+                          (leagueOwnerData.rb_starter_sum / leagueOwnerData.rb_max_starter_value) *
+                          100
+                        "
+                        :strokeColor="getProgressColor('RB')"
+                        strokeWidth="15"
+                        :format="
+                          (percent) => `${leagueOwnerData.rb_max_starter_value?.toLocaleString()}`
+                        "
+                      />
+                    </a-tooltip>
+                    <span>WR</span>
+                    <a-tooltip
+                      :title="`${addOrdinalSuffix(leagueOwnerData.wr_starter_rank)} ${leagueOwnerData.wr_starter_sum?.toLocaleString()}`"
+                      ><a-progress
+                        :percent="
+                          (leagueOwnerData.wr_starter_sum / leagueOwnerData.wr_max_starter_value) *
+                          100
+                        "
+                        :strokeColor="getProgressColor('WR')"
+                        strokeWidth="15"
+                        :format="
+                          (percent) => `${leagueOwnerData.wr_max_starter_value?.toLocaleString()}`
+                        "
+                      />
+                    </a-tooltip>
+                    <span>TE</span>
+                    <a-tooltip
+                      :title="`${addOrdinalSuffix(leagueOwnerData.te_starter_rank)} ${leagueOwnerData.te_starter_sum?.toLocaleString()}`"
+                      ><a-progress
+                        :percent="
+                          (leagueOwnerData.te_starter_sum / leagueOwnerData.te_max_starter_value) *
+                          100
+                        "
+                        :strokeColor="getProgressColor('TE')"
+                        strokeWidth="15"
+                        :format="
+                          (percent) => `${leagueOwnerData.te_max_starter_value?.toLocaleString()}`
                         "
                       />
                     </a-tooltip>
                   </div>
-                  <span>TE</span>
-                  <a-tooltip
-                    :title="`${addOrdinalSuffix(leagueOwnerData.te_rank)} ${leagueOwnerData.te_sum?.toLocaleString()}`"
-                    ><a-progress
-                      :percent="(leagueOwnerData.te_sum / leagueOwnerData.te_max_value) * 100"
-                      :strokeColor="getProgressColor('TE')"
-                      strokeWidth="15"
-                      :format="(percent) => `${leagueOwnerData.te_max_value?.toLocaleString()}`"
-                    />
-                  </a-tooltip>
-                  <span>WR</span>
-                  <a-tooltip
-                    :title="`${addOrdinalSuffix(leagueOwnerData.wr_rank)} ${leagueOwnerData.wr_sum?.toLocaleString()}`"
-                    ><a-progress
-                      :percent="(leagueOwnerData.wr_sum / leagueOwnerData.wr_max_value) * 100"
-                      :strokeColor="getProgressColor('WR')"
-                      strokeWidth="15"
-                      :format="(percent) => `${leagueOwnerData.wr_max_value?.toLocaleString()}`"
-                    />
-                  </a-tooltip>
-                  <span>RB</span>
-                  <a-tooltip
-                    :title="`${addOrdinalSuffix(leagueOwnerData.rb_rank)} ${leagueOwnerData.rb_sum?.toLocaleString()}`"
-                    ><a-progress
-                      :percent="(leagueOwnerData.rb_sum / leagueOwnerData.rb_max_value) * 100"
-                      :strokeColor="getProgressColor('RB')"
-                      strokeWidth="15"
-                      :format="(percent) => `${leagueOwnerData.rb_max_value?.toLocaleString()}`"
-                    />
-                  </a-tooltip>
-                  <span>QB</span>
-                  <a-tooltip
-                    :title="`${addOrdinalSuffix(leagueOwnerData.qb_rank)} ${leagueOwnerData.qb_sum?.toLocaleString()}`"
-                    ><a-progress
-                      :percent="(leagueOwnerData.qb_sum / leagueOwnerData.qb_max_value) * 100"
-                      :strokeColor="getProgressColor('QB')"
-                      strokeWidth="15"
-                      :format="(percent) => `${leagueOwnerData.qb_max_value?.toLocaleString()}`"
-                    />
-                  </a-tooltip>
-                </div>
-              </div>
+                </a-col>
+              </a-row>
             </div>
           </TabPanel>
-          <TabPanel header="single Manager"> {{ singleManagerData }} ///// {{ data }}</TabPanel>
-          <TabPanel header="Best Available"></TabPanel>
+          <TabPanel header="Waivers">
+            <div>
+              <h2>Best Available</h2>
+              <a-row :gutter="{ xs: 8, sm: 16, md: 24, lg: 32 }">
+                <a-col
+                  :xs="24"
+                  :sm="12"
+                  :md="8"
+                  :lg="6"
+                  v-for="(players, position) in groupedPlayers"
+                  :key="position"
+                >
+                  <a-card>
+                    <template #title>
+                      <a-tag :style="getPositionTag(position)" size="large">{{ position }}</a-tag>
+                    </template>
+                    <p v-for="player in players" :key="player.sleeper_id">
+                      {{ player.full_name }} &bull; {{ player.player_value }}
+                    </p>
+                  </a-card>
+                </a-col>
+              </a-row>
+            </div></TabPanel
+          >
         </TabView>
       </a-spin>
     </a-layout-content>
@@ -449,6 +579,7 @@ import MeterGroup from 'primevue/metergroup'
 import Card from 'primevue/card'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
+import Chart from 'primevue/chart'
 
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
@@ -484,6 +615,7 @@ const leagueInfo = reactive({
 
 const summaryData = ref([])
 const detailData = ref([{}])
+const bestAvailableData = ref([{}])
 const singleManagerData = ref(null)
 
 const leaguesUrl = `/leagues/${leagueYear}/${userName}/${guid}`
@@ -493,6 +625,7 @@ const summaryIsLoading = ref(false)
 const detailIsLoading = ref(false)
 
 const selection = ref({})
+
 function formatGaugeData(record) {
   // Assuming 'record' has a property 'usedSpace' you want to display
   return [
@@ -722,6 +855,7 @@ onMounted(() => {
   if (leagueId && platform && rankType && guid && userId) {
     fetchSummaryData(leagueId, platform, rankType, guid, rosterType)
     fetchDetailData(leagueId, platform, rankType, guid, rosterType)
+    fetchBaData(leagueId, platform, rankType, guid, rosterType)
   }
 })
 
@@ -735,9 +869,46 @@ function getProgressColor(position: string): string {
   } else if (position === 'TE') {
     return 'rgb(249, 132, 74)'
   } else if (position === 'Picks') {
-    return 'rgba(189, 195, 199, 0.6)'
+    return 'rgb(70, 70, 70, .4)'
   } else {
     return '#fff'
+  }
+}
+
+function getPositionTag(position) {
+  switch (position) {
+    case 'QB':
+      return {
+        color: 'rgb(39, 125, 161)',
+        background: 'rgb(39, 125, 161, .15)',
+        'border-color': 'rgb(39, 125, 161)'
+      }
+    case 'RB':
+      return {
+        color: 'rgb(144, 190, 109)',
+        background: 'rgb(144, 190, 109, .15)',
+        'border-color': 'rgb(144, 190, 109)'
+      }
+    case 'WR':
+      return {
+        color: 'rgb(67, 170, 139)',
+        background: 'rgb(67, 170, 139, .15)',
+        'border-color': 'rgb(67, 170, 139)'
+      }
+    case 'TE':
+      return {
+        color: 'rgb(249, 132, 74)',
+        background: 'rgb(249, 132, 74, .15)',
+        'border-color': 'rgb(249, 132, 74)'
+      }
+    case 'PICKS':
+      return {
+        color: 'rgb(39, 125, 161)',
+        background: 'rgb(39, 125, 161, .15)',
+        'border-color': 'rgb(39, 125, 161)'
+      }
+    default:
+      return {}
   }
 }
 
@@ -785,6 +956,13 @@ const insertLeagueDetials = async (values: any) => {
       leagueInfo.rosterType
     )
     fetchDetailData(
+      leagueInfo.leagueId,
+      leagueInfo.platform,
+      leagueInfo.rankType,
+      leagueInfo.guid,
+      leagueInfo.rosterType
+    )
+    fetchBaData(
       leagueInfo.leagueId,
       leagueInfo.platform,
       leagueInfo.rankType,
@@ -846,6 +1024,34 @@ async function fetchSummaryData(
   }
 }
 
+async function fetchBaData(
+  leagueId: string,
+  platform: string,
+  rankType: string,
+  guid: string,
+  rosterType: string
+) {
+  // detailIsLoading.value = true
+  try {
+    const response = await axios.get(`http://127.0.0.1:8000/best_avialable`, {
+      params: {
+        league_id: leagueId,
+        platform: platform,
+        rank_type: rankType,
+        guid: guid,
+        roster_type: rosterType
+      }
+    })
+
+    bestAvailableData.value = response.data
+  } catch (error) {
+    console.error('There was an error fetching the best available data:', error)
+    message.error('Failed to fetch best available data.')
+  } finally {
+    // detailIsLoading.value = false
+  }
+}
+
 const leagueOwnerData = computed(() => {
   const ownerData = summaryData.value
     .map(({ total_value, ...rest }) => rest)
@@ -856,17 +1062,22 @@ const leagueOwnerData = computed(() => {
   const wrMaxValue = summaryData.value.reduce((max, item) => Math.max(max, item.wr_sum), 0)
   const teMaxValue = summaryData.value.reduce((max, item) => Math.max(max, item.te_sum), 0)
   const picksMaxValue = summaryData.value.reduce((max, item) => Math.max(max, item.picks_sum), 0)
-
-  // Extract qb_sum values and sort them
-  const qbSums = summaryData.value.map((item) => item.qb_sum).sort((a, b) => a - b)
-  // Calculate the median of qb_sum
-  let qbMedian
-  const mid = Math.floor(qbSums.length / 2)
-  if (qbSums.length % 2 === 0) {
-    qbMedian = (qbSums[mid - 1] + qbSums[mid]) / 2
-  } else {
-    qbMedian = qbSums[mid]
-  }
+  const qbStarterMaxValue = summaryData.value.reduce(
+    (max, item) => Math.max(max, item.qb_starter_sum),
+    0
+  )
+  const rbStarterMaxValue = summaryData.value.reduce(
+    (max, item) => Math.max(max, item.rb_starter_sum),
+    0
+  )
+  const wrStarterMaxValue = summaryData.value.reduce(
+    (max, item) => Math.max(max, item.wr_starter_sum),
+    0
+  )
+  const teStarterMaxValue = summaryData.value.reduce(
+    (max, item) => Math.max(max, item.te_starter_sum),
+    0
+  )
 
   return {
     ...ownerData,
@@ -876,12 +1087,95 @@ const leagueOwnerData = computed(() => {
     wr_max_value: wrMaxValue,
     te_max_value: teMaxValue,
     picks_max_value: picksMaxValue,
-    qb_median: qbMedian
+    qb_max_starter_value: qbStarterMaxValue,
+    rb_max_starter_value: rbStarterMaxValue,
+    wr_max_starter_value: wrStarterMaxValue,
+    te_max_starter_value: teStarterMaxValue
+  }
+})
+
+const leagueOwnerDataByPosition = (position) =>
+  computed(() => {
+    return detailData.value
+      .filter((item) => item.user_id === leagueInfo.userId && item.player_position === position)
+      .map((player) => ({
+        x: player.age, // Or another relevant metric
+        y: player.player_value,
+        r: 7, // Or calculate based on a metric
+        label: player.full_name // Adding full_name as label for tooltips
+      }))
+  })
+
+const chartData = computed(() => {
+  const positions = ['QB', 'RB', 'WR', 'TE'] // Extend this array based on your data
+  const colors = {
+    QB: 'rgb(39, 125, 161)',
+    RB: 'rgb(144, 190, 109)',
+    WR: 'rgb(67, 170, 139)',
+    TE: 'rgb(249, 132, 74)'
+  }
+
+  return {
+    datasets: positions.map((position) => ({
+      label: position,
+      data: leagueOwnerDataByPosition(position).value,
+      backgroundColor: colors[position]
+    }))
+  }
+})
+const chartOptions = computed(() => {
+  return {
+    responsive: true,
+    maintainAspectRatio: false, // Set to false to fully fit the container, true to maintain aspect ratio
+    plugins: {
+      legend: {
+        display: true,
+        labels: {
+          font: {
+            size: 12 // Smaller font size for better readability on small screens
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const dataPoint = context.raw
+            return `${dataPoint.label}: ${dataPoint.y}`
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          font: {
+            size: 10 // Smaller font size for x-axis ticks
+          }
+        }
+      },
+      y: {
+        ticks: {
+          font: {
+            size: 10 // Smaller font size for y-axis ticks
+          }
+        }
+      }
+    }
   }
 })
 
 const starterData = computed(() => {
   return detailData.value.filter((item) => item.fantasy_designation === 'STARTER')
+})
+
+const groupedPlayers = computed(() => {
+  return bestAvailableData.value.reduce((acc, player) => {
+    if (!acc[player.player_position]) {
+      acc[player.player_position] = []
+    }
+    acc[player.player_position].push(player)
+    return acc
+  }, {})
 })
 
 async function fetchDetailData(
@@ -968,10 +1262,34 @@ table {
   top: 0;
   left: 50%;
   transform: translate(-50%, 0%);
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgb(70, 70, 70);
   color: white;
   padding: 0 4px;
   border-radius: 10px;
+}
+.progress-bars-section {
+  display: grid;
+  gap: 16px;
+}
+
+.progress-container {
+  margin: 0 auto;
+}
+.progress-bars-section-mv {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.progress-bar-group-mv {
+  margin: 0 auto;
+}
+
+.progress-container-mv {
+  max-width: 1000px;
+}
+.chart-container {
+  max-width: 800px; /* Set the maximum width you prefer */
+  margin: auto; /* Center the chart in the parent container */
 }
 /* Responsive styles */
 @media (min-width: 992px) {
