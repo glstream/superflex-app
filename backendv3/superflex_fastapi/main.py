@@ -54,7 +54,7 @@ def leagues(league_year: str, user_name: str, guid: str, db: str = Depends(get_d
     session_id = guid
 
     cursor_.execute(
-        f"""select ROW_NUMBER() OVER() as key, session_id, cl.user_id, cl.league_id, league_name, avatar, total_rosters, qb_cnt, CASE WHEN sf_cnt > 0 THEN 'Superflex' else 'Single QB' end as roster_type, starter_cnt, total_roster_cnt, sport, insert_date, rf_cnt, case when league_cat = 0 THEN 'Redraft' when league_cat = 1 THEN 'Keeper' else 'Dynasty' end as league_type, league_year, rs.ktc_power_rank, rs.sf_power_rank, rs.fc_power_rank, rs.dp_power_rank, rs.espn_contender_rank, rs.nfl_contender_rank, rs.fp_contender_rank, rs.fc_contender_rank, rs.cbs_contender_rank 
+        f"""select ROW_NUMBER() OVER() as key, session_id, cl.user_name,cl.user_id, cl.league_id, league_name, avatar, total_rosters, qb_cnt, CASE WHEN sf_cnt > 0 THEN 'Superflex' else 'Single QB' end as roster_type, starter_cnt, total_roster_cnt, sport, insert_date, rf_cnt, case when league_cat = 0 THEN 'Redraft' when league_cat = 1 THEN 'Keeper' else 'Dynasty' end as league_type, league_year, rs.ktc_power_rank, rs.sf_power_rank, rs.fc_power_rank, rs.dp_power_rank, rs.espn_contender_rank, rs.nfl_contender_rank, rs.fp_contender_rank, rs.fc_contender_rank, rs.cbs_contender_rank 
     from dynastr.current_leagues cl 
     left join dynastr.ranks_summary rs on cl.league_id = rs.league_id and cl.user_id = rs.user_id  
     where 1=1
@@ -77,8 +77,6 @@ def league(league_id: str, platform: str, rank_type: str, guid: str, roster_type
     print(league_id, platform, rank_type)
 
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
-    # session_id = 'FAST_API'  # testing session_id
-    # session_id = 'cc73437c-40b6-4cd4-9835-6b41033968c4'  # testing session_id
     session_id = guid
     league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
 
@@ -119,6 +117,54 @@ def league(league_id: str, platform: str, rank_type: str, guid: str, roster_type
                 .replace("league_type", f"{league_type}")
             )
     cursor_.execute(power_summary_sql)
+    db_resp_obj = cursor_.fetchall()
+    cursor_.close()
+
+    return db_resp_obj
+
+
+@app.get("/contender_league_summary")
+def contender_league_summary(league_id: str, projection_source: str, guid: str, db: str = Depends(get_db)):
+    print(league_id, projection_source)
+
+    cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
+    session_id = guid
+
+    with open(
+        Path.cwd() / "sql" / "summary" / "contender" /
+        f"{projection_source}.sql",
+        "r",
+    ) as projections_file:
+        projections_sql = (
+            projections_file.read()
+            .replace("'session_id'", f"'{session_id}'")
+            .replace("'league_id'", f"'{league_id}'")
+        )
+    cursor_.execute(projections_sql)
+    db_resp_obj = cursor_.fetchall()
+    cursor_.close()
+
+    return db_resp_obj
+
+
+@app.get("/contender_league_detail")
+def contender_league_detail(league_id: str, projection_source: str, guid: str, db: str = Depends(get_db)):
+    print(league_id, projection_source)
+
+    cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
+    session_id = guid
+
+    with open(
+        Path.cwd() / "sql" / "details" / "contender" /
+        f"{projection_source}.sql",
+        "r",
+    ) as projections_file:
+        projections_sql = (
+            projections_file.read()
+            .replace("'session_id'", f"'{session_id}'")
+            .replace("'league_id'", f"'{league_id}'")
+        )
+    cursor_.execute(projections_sql)
     db_resp_obj = cursor_.fetchall()
     cursor_.close()
 

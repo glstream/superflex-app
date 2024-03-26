@@ -8,205 +8,45 @@
         <a-breadcrumb-item>Leagues</a-breadcrumb-item>
       </a-breadcrumb>
 
-      <div style="display: flex; justify-content: left">
+      <div class="table-section" style="flex: 2">
         <a-table
           :columns="columns"
           :data-source="data"
           :loading="isLoading"
           :expand-column-width="100"
-          style="max-width: 850px"
         >
-          <!-- Custom cell template for league names with click handler -->
+          <template v-slot:[`actionSlot`]="{ record }">
+            <a-space>
+              <a-button type="primary" @click="getLeagueDetail(record)">Details</a-button>
+              <a-button type="primary" @click="getLeagueSummary(record)">Sumary</a-button>
+            </a-space>
+          </template>
           <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'league_name'"> </template>
+            <template v-if="column.key === 'league_type'">
+              <span>
+                <a-tag
+                  :color="
+                    record.league_type === 'Dynasty'
+                      ? 'cyan'
+                      : recrod.league_type === 'Redraft'
+                        ? 'green'
+                        : 'red'
+                  "
+                  >{{ record.league_type }}</a-tag
+                >
+              </span>
+            </template>
           </template>
-
-          <!-- Expanded row template for detailed league information -->
-          <template #expandedRowRender="{ record }">
-            <div class="expanded-row-content">
-              <div
-                style="
-                  display: flex;
-                  justify-content: start;
-                  gap: 20px;
-                  overflow-y: auto;
-                  max-height: 300px;
-                "
-              >
-                <div class="expanded-row-content">
-                  <a-card title="Dynasty Ranks" :bordered="false" class="rank-card">
-                    <ul class="rank-list">
-                      <li class="rank-item">
-                        <div class="rank-name">Keep Trade Cut</div>
-                        <div class="rank-tags">
-                          <a-tooltip title="Overall">
-                            <a-tag>{{ addOrdinalSuffix(record.ktc_power_rank) }}</a-tag>
-                          </a-tooltip>
-                          <a-tooltip title="Starters">
-                            <a-tag>{{ addOrdinalSuffix(record.ktc_power_rank) }}</a-tag>
-                          </a-tooltip>
-                        </div>
-                        <span class="action-buttons">
-                          <a-button
-                            type="primary"
-                            size="small"
-                            class="league-load-buttons"
-                            @click="
-                              insertLeagueDetails(record, { platform: 'ktc', rankType: 'power' })
-                            "
-                            >Details</a-button
-                          >
-                          <a-button type="primary" @click.prevent="handleClick(record)" size="small"
-                            >Summary</a-button
-                          >
-                        </span>
-                      </li>
-                      <li class="rank-item">
-                        <div class="rank-name">Superflex</div>
-                        <div class="rank-tags">
-                          <a-tooltip title="Overall">
-                            <a-tag>{{ addOrdinalSuffix(record.ktc_power_rank) }}</a-tag>
-                          </a-tooltip>
-                          <a-tooltip title="Starters">
-                            <a-tag>{{ addOrdinalSuffix(record.ktc_power_rank) }}</a-tag>
-                          </a-tooltip>
-                        </div>
-                        <span class="action-buttons">
-                          <a-button type="primary" size="small" class="league-load-buttons"
-                            >Details</a-button
-                          >
-                          <a-button type="primary" @click.prevent="handleClick(record)" size="small"
-                            >Summary</a-button
-                          >
-                        </span>
-                      </li>
-                      <li class="rank-item">
-                        <div class="rank-name">DynastyProcess</div>
-                        <div class="rank-tags">
-                          <a-tooltip title="Overall">
-                            <a-tag>{{ addOrdinalSuffix(record.dp_power_rank) }}</a-tag>
-                          </a-tooltip>
-                          <a-tooltip title="Starters">
-                            <a-tag>{{ addOrdinalSuffix(record.dp_power_rank) }}</a-tag>
-                          </a-tooltip>
-                        </div>
-
-                        <span class="action-buttons">
-                          <a-button type="primary" size="small" class="league-load-buttons"
-                            >Details</a-button
-                          >
-                          <a-button type="primary" @click.prevent="handleClick(record)" size="small"
-                            >Summary</a-button
-                          >
-                        </span>
-                      </li>
-                      <li class="rank-item">
-                        <div class="rank-name">FantasyCalc</div>
-                        <div class="rank-tags">
-                          <a-tooltip title="Overall">
-                            <a-tag>{{ addOrdinalSuffix(record.fc_power_rank) }}</a-tag>
-                          </a-tooltip>
-                          <a-tooltip title="Starters">
-                            <a-tag>{{ addOrdinalSuffix(record.fc_power_rank) }}</a-tag>
-                          </a-tooltip>
-                        </div>
-
-                        <span class="action-buttons">
-                          <a-button type="primary" size="small" class="league-load-buttons"
-                            >Details</a-button
-                          >
-                          <a-button type="primary" @click.prevent="handleClick(record)" size="small"
-                            >Summary</a-button
-                          >
-                        </span>
-                      </li>
-                    </ul>
-                  </a-card>
-                </div>
-                <a-card title="Contender Ranks" :bordered="false" class="rank-card">
-                  <ul class="rank-list">
-                    <li class="rank-item">
-                      <div class="rank-name">ESPN</div>
-                      <div class="rank-tags">
-                        <a-tooltip title="Overall">
-                          <a-tag>{{ addOrdinalSuffix(record.espn_contender_rank) }}</a-tag>
-                        </a-tooltip>
-                        <a-tooltip title="Starters">
-                          <a-tag>{{ addOrdinalSuffix(record.espn_contender_rank) }}</a-tag>
-                        </a-tooltip>
-                      </div>
-                      <span class="action-buttons">
-                        <a-button type="primary" size="small" class="league-load-buttons"
-                          >Details</a-button
-                        >
-                        <a-button type="primary" @click.prevent="handleClick(record)" size="small"
-                          >Summary</a-button
-                        >
-                      </span>
-                    </li>
-                    <li class="rank-item">
-                      <div class="rank-name">NFL</div>
-                      <div class="rank-tags">
-                        <a-tooltip title="Overall">
-                          <a-tag>{{ addOrdinalSuffix(record.nfl_contender_rank) }}</a-tag>
-                        </a-tooltip>
-                        <a-tooltip title="Starters">
-                          <a-tag>{{ addOrdinalSuffix(record.nfl_contender_rank) }}</a-tag>
-                        </a-tooltip>
-                      </div>
-                      <span class="action-buttons">
-                        <a-button type="primary" size="small" class="league-load-buttons"
-                          >Details</a-button
-                        >
-                        <a-button type="primary" @click.prevent="handleClick(record)" size="small"
-                          >Summary</a-button
-                        >
-                      </span>
-                    </li>
-                    <li class="rank-item">
-                      <div class="rank-name">CBS</div>
-                      <div class="rank-tags">
-                        <a-tooltip title="Overall">
-                          <a-tag>{{ addOrdinalSuffix(record.cbs_contender_rank) }}</a-tag>
-                        </a-tooltip>
-                        <a-tooltip title="Starters">
-                          <a-tag>{{ addOrdinalSuffix(record.cbs_contender_rank) }}</a-tag>
-                        </a-tooltip>
-                      </div>
-                      <span class="action-buttons">
-                        <a-button type="primary" size="small" class="league-load-buttons"
-                          >Details</a-button
-                        >
-                        <a-button type="primary" @click.prevent="handleClick(record)" size="small"
-                          >Summary</a-button
-                        >
-                      </span>
-                    </li>
-                    <li class="rank-item">
-                      <div class="rank-name">FantasyCalc</div>
-                      <div class="rank-tags">
-                        <a-tooltip title="Overall">
-                          <a-tag>{{ addOrdinalSuffix(record.fc_contender_rank) }}</a-tag>
-                        </a-tooltip>
-                        <a-tooltip title="Starters">
-                          <a-tag>{{ addOrdinalSuffix(record.fc_contender_rank) }}</a-tag>
-                        </a-tooltip>
-                      </div>
-                      <span class="action-buttons">
-                        <a-button type="primary" size="small" class="league-load-buttons"
-                          >Details</a-button
-                        >
-                        <a-button type="primary" @click.prevent="handleClick(record)" size="small"
-                          >Summary</a-button
-                        >
-                      </span>
-                    </li>
-                  </ul>
-                </a-card>
-              </div>
-            </div>
-          </template>
-          <template #expandColumnTitle> </template>
+          <template v-slot:avatarRender="{ record }">
+            <div>
+              <img
+                class="avatar-manager"
+                :src="`https://sleepercdn.com/avatars/thumbs/${record.avatar}`"
+                style="width: 30px; height: 30px; margin-right: 10px; vertical-align: middle"
+              />
+              {{ record.league_name }}
+            </div></template
+          >
         </a-table>
       </div>
     </a-layout-content>
@@ -225,7 +65,6 @@ import axios from 'axios'
 import { addOrdinalSuffix } from '../utils/suffix'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import type { TableColumnType, TableProps } from 'ant-design-vue'
 
 type TableDataType = {
   key: number
@@ -237,7 +76,12 @@ type TableDataType = {
 }
 
 const columns = [
-  { title: 'Name', dataIndex: 'league_name', key: 'league_name', width: 300 },
+  {
+    title: 'League',
+    dataIndex: 'league_name',
+    key: 'league_name',
+    slots: { customRender: 'avatarRender' }
+  },
   {
     title: 'Type',
     dataIndex: 'league_type',
@@ -294,13 +138,20 @@ const columns = [
     title: 'Starters',
     dataIndex: 'starter_cnt',
     key: 'starter_cnt',
+    align: 'center',
     width: 100,
     sorter: {
       compare: (a, b) => a.starter_cnt - b.starter_cnt,
       multiple: 2
     }
   },
-  { title: 'Load', dataIndex: '', key: 'starter_cnt' }
+  {
+    title: 'Actions',
+    key: 'actions',
+    align: 'center',
+    width: 150,
+    slots: { customRender: 'actionSlot' }
+  }
 ]
 
 // configs
@@ -350,29 +201,18 @@ async function fetchData(leagueYear: string, userName: string, guid: string) {
   }
 }
 
-const insertLeagueDetails = async (record, metadata) => {
-  console.log('trying insert rosters')
-  console.log(record)
-  console.log(guid)
-  console.log(leagueYear)
+const getLeagueDetail = async (record) => {
   try {
-    const userResponse = await axios.get('http://127.0.0.1:8000/get_user', {
-      params: {
-        user_name: userName
-      }
-    })
-    console.log(userResponse)
-    const userId = userResponse.data.user_id
-
-    // const response = await axios.post('http://127.0.0.1:8000/roster', {
-    //   league_id: record.league_id,
-    //   user_id: userId,
-    //   guid: guid,
-    //   league_year: leagueYear
-    // })
+    const leagueId = record.league_id
+    const guid = record.session_id
+    const leagueYear = record.league_year
+    const userName = record.user_name
+    const leagueName = record.league_name
+    const rosterType = record.roster_type
+    const userId = record.user_id
 
     router.push(
-      `/league/${record.league_id}/${metadata.platform}/${metadata.rankType}/${guid}/${leagueYear}/${userName}/${record.league_name}/${record.roster_type}/${userId}`
+      `/league/${leagueId}/ktc/power/${guid}/${leagueYear}/${userName}/${leagueName}/${rosterType}/${userId}`
     )
 
     console.log('Sending to League details')
@@ -385,11 +225,16 @@ const insertLeagueDetails = async (record, metadata) => {
 }
 
 // Function to handle click event
-const handleClick = (record) => {
-  console.log(record) // Do something with the record
-  // For example, navigate to another route, open a modal, etc.
+const getLeagueSummary = (record) => {
+  const leagueId = record.league_id
+  const guid = record.session_id
+  const leagueYear = record.league_year
+  const userName = record.user_name
+  const leagueName = record.league_name
+  const rosterType = record.roster_type
+  const userId = record.user_id
 
-  const url = `/leagueview/${encodeURIComponent(userName)}/${encodeURIComponent(record.user_id)}/${encodeURIComponent(record.league_id)}/${encodeURIComponent(record.league_name)}/${encodeURIComponent(record.sf_check)}/${record.league_year}/${record.starter_cnt}/${record.total_rosters}/${record.league_type}/${record.session_id}/${record.roster_type}`
+  const url = `/leagueview/${userName}/${userId}/${leagueId}/${leagueName}/${rosterType}/${leagueYear}/${record.starter_cnt}/${record.total_rosters}/${record.league_type}/${guid}/${rosterType}`
 
   router.push(url)
 }
@@ -400,38 +245,7 @@ const handleClick = (record) => {
   min-height: 100vh;
   min-width: 1000px;
 }
-.expanded-row-content {
-  display: flex;
-  justify-content: start;
-  gap: 20px;
-  overflow-y: auto;
-  max-height: 300px;
-}
-/* Add custom styles for expanded row content if necessary */
-.ant-table-expanded-row > td {
-  overflow: hidden; /* Adjust as needed for your content */
-}
 
-.rank-card {
-  width: 400px;
-}
-
-.rank-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.rank-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-}
-
-.league-load-buttons {
-  margin-right: 5px;
-}
 .site-layout-content {
   min-height: 280px;
   padding: 24px;
@@ -446,5 +260,15 @@ const handleClick = (record) => {
 .rank-tags {
   display: flex;
   gap: 8px; /* Adjust the space between tags */
+}
+.table-section {
+  display: flex;
+  justify-content: left;
+}
+.avatar-manager {
+  width: 38px;
+  height: 38px;
+  border-radius: 7px;
+  border: 1px solid gray;
 }
 </style>
