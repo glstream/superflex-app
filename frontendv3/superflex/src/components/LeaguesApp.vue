@@ -2,7 +2,7 @@
   <a-layout class="layout">
     <AppHeader />
 
-    <a-layout-content style="padding: 0 50px">
+    <a-layout-content style="padding: 0 100px">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/userName">Home</a></a-breadcrumb-item>
         <a-breadcrumb-item>Leagues</a-breadcrumb-item>
@@ -40,7 +40,7 @@
           <template v-slot:avatarRender="{ record }">
             <div>
               <img
-                class="avatar-manager"
+                class="league-logo"
                 :src="`https://sleepercdn.com/avatars/thumbs/${record.avatar}`"
                 style="width: 30px; height: 30px; margin-right: 10px; vertical-align: middle"
               />
@@ -58,13 +58,14 @@
 // Vue Imports
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
+import AppHeader from '@/components/AppHeader.vue'
+import AppFooter from '@/components/AppFooter.vue'
+
 // 3rd Party imports
 import axios from 'axios'
 
-// UTILS imports
-import { addOrdinalSuffix } from '../utils/suffix'
-import AppHeader from '@/components/AppHeader.vue'
-import AppFooter from '@/components/AppFooter.vue'
+// Custom Utils imports
 
 type TableDataType = {
   key: number
@@ -210,9 +211,10 @@ const getLeagueDetail = async (record) => {
     const leagueName = record.league_name
     const rosterType = record.roster_type
     const userId = record.user_id
+    const avatar = record.avatar
 
     router.push(
-      `/league/${leagueId}/ktc/power/${guid}/${leagueYear}/${userName}/${leagueName}/${rosterType}/${userId}`
+      `/league/${leagueId}/sf/power/${guid}/${leagueYear}/${userName}/${leagueName}/${rosterType}/${userId}/${avatar}`
     )
 
     console.log('Sending to League details')
@@ -265,7 +267,7 @@ const getLeagueSummary = (record) => {
   display: flex;
   justify-content: left;
 }
-.avatar-manager {
+.league-logo {
   width: 38px;
   height: 38px;
   border-radius: 7px;

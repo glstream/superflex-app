@@ -1,76 +1,100 @@
 <template>
   <a-layout class="layout">
     <AppHeader />
-    <a-layout-content style="padding: 0 50px">
+    <a-layout-content class="responsive-padding">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
         <a-breadcrumb-item><a :href="leaguesUrl">Leagues</a></a-breadcrumb-item>
         <a-breadcrumb-item>League Details</a-breadcrumb-item>
       </a-breadcrumb>
-      <a-avatar-group
-        maxCount="12"
-        maxPopoverPlacement="bottom"
-        maxPopoverTrigger="hover"
-        :max-count="12"
-      >
-        <div v-for="user in summaryData" :key="user.user_id">
-          <div
-            v-if="user.user_id === leagueInfo.userId"
-            style="position: relative; display: inline-block"
-          >
-            <a-tooltip
-              :title="`${addOrdinalSuffix(user.total_rank)} ${user.display_name}`"
-              placement="top"
+      <div style="display: flex; justify-content: left">
+        <a-avatar-group
+          maxCount="12"
+          maxPopoverPlacement="bottom"
+          maxPopoverTrigger="hover"
+          :max-count="12"
+        >
+          <div v-for="user in summaryData" :key="user.user_id">
+            <div
+              v-if="user.user_id === leagueInfo.userId"
+              style="position: relative; display: inline-block"
             >
-              <a
-                :href="`https://sleeper.com/leagues/${leagueInfo.leagueId}/league`"
-                target="_blank"
+              <a-tooltip
+                :title="`${addOrdinalSuffix(user.total_rank)} ${user.display_name}`"
+                placement="top"
               >
                 <a-avatar
-                  :src="`https://sleepercdn.com/avatars/thumbs/${user.avatar}`"
+                  :src="`https://sleepercdn.com/avatars/thumbs/${leagueInfo.avatar}`"
                   maxPopoverTrigger="hover"
                   :size="45"
                   style="border: 2px solid gold"
                 />
-              </a>
-            </a-tooltip>
-            <span class="badge-label">
-              {{ addOrdinalSuffix(user.total_rank) }}
-            </span>
-          </div>
+              </a-tooltip>
+              <span class="badge-label">
+                {{ addOrdinalSuffix(user.total_rank) }}
+              </span>
+            </div>
 
-          <div v-else>
-            <a-tooltip
-              :title="`${addOrdinalSuffix(user.total_rank)} ${user.display_name}`"
-              placement="top"
-            >
-              <a
-                :href="`https://sleeper.com/leagues/${leagueInfo.leagueId}/league`"
-                target="_blank"
+            <div v-else>
+              <a-tooltip
+                :title="`${addOrdinalSuffix(user.total_rank)} ${user.display_name}`"
+                placement="top"
               >
                 <a-avatar
                   :src="`https://sleepercdn.com/avatars/thumbs/${user.avatar}`"
                   maxPopoverTrigger="hover"
                 />
-              </a>
-            </a-tooltip>
+              </a-tooltip>
+            </div>
           </div>
-        </div>
-      </a-avatar-group>
-      <div style="display: flex; align-items: center; justify-content: space-between">
-        <h2>
-          {{ leagueInfo.leagueName }} &bull; {{ leagueInfo.platform }}
-          {{ leagueInfo.rankType }} Rankings
-        </h2>
-        <a-button
-          @click="insertLeagueDetials(leagueInfo.leagueId)"
-          type="primary"
-          style="margin-right: 10px"
-        >
-          Load League
-        </a-button>
+        </a-avatar-group>
       </div>
+      <div class="header-container">
+        <div class="title-container">
+          <h2 class="league-title">
+            <img
+              class="league-logo"
+              :src="`https://sleepercdn.com/avatars/thumbs/${leagueInfo.avatar}`"
+              alt="League Logo"
+            />
+            {{ leagueInfo.leagueName }}
 
+            <a-tag color="cyan" size="large" style="margin-left: 15px">{{ source }}</a-tag>
+          </h2>
+        </div>
+        <div class="controls-container">
+          <a-dropdown-button @click="handleButtonClick" class="dropdown-button">
+            Ranking Source
+            <template #overlay>
+              <a-menu @click="handleMenuClick">
+                <a-menu-item key="sf">
+                  <UserOutlined />
+                  SuperFlex
+                </a-menu-item>
+                <a-menu-item key="ktc">
+                  <UserOutlined />
+                  KeepTradeCut
+                </a-menu-item>
+                <a-menu-item key="dp">
+                  <UserOutlined />
+                  DynastyProcess
+                </a-menu-item>
+                <a-menu-item key="fc">
+                  <UserOutlined />
+                  FantasyCalc
+                </a-menu-item>
+              </a-menu>
+            </template>
+          </a-dropdown-button>
+          <a-button
+            @click="insertLeagueDetials(leagueInfo.leagueId)"
+            type="primary"
+            class="load-league-button"
+          >
+            Load League
+          </a-button>
+        </div>
+      </div>
       <a-spin tip="Loading..." :spinning="summaryIsLoading">
         <TabView :scrollable="true">
           <TabPanel header="Overall">
@@ -188,7 +212,11 @@
                           >
                             <p v-if="player.player_position === 'QB'">
                               {{ player.full_name }}
-                              {{ player.player_value.toLocaleString() }}
+                              {{
+                                player.player_value === -1
+                                  ? 'Unranked'
+                                  : player.player_value.toLocaleString()
+                              }}
                             </p>
                           </div>
                         </a-card>
@@ -205,7 +233,11 @@
                           >
                             <p v-if="player.player_position === 'RB'">
                               {{ player.full_name }}
-                              {{ player.player_value.toLocaleString() }}
+                              {{
+                                player.player_value === -1
+                                  ? 'Unranked'
+                                  : player.player_value.toLocaleString()
+                              }}
                             </p>
                           </div>
                         </a-card>
@@ -222,7 +254,11 @@
                           >
                             <p v-if="player.player_position === 'WR'">
                               {{ player.full_name }}
-                              {{ player.player_value.toLocaleString() }}
+                              {{
+                                player.player_value === -1
+                                  ? 'Unranked'
+                                  : player.player_value.toLocaleString()
+                              }}
                             </p>
                           </div>
                         </a-card>
@@ -235,7 +271,11 @@
                           >
                             <p v-if="player.player_position === 'TE'">
                               {{ player.full_name }}
-                              {{ player.player_value.toLocaleString() }}
+                              {{
+                                player.player_value === -1
+                                  ? 'Unranked'
+                                  : player.player_value.toLocaleString()
+                              }}
                             </p>
                           </div>
                         </a-card>
@@ -248,7 +288,11 @@
                           >
                             <p v-if="player.player_position === 'PICKS'">
                               {{ player.full_name }}
-                              {{ player.player_value.toLocaleString() }}
+                              {{
+                                player.player_value === -1
+                                  ? 'Unranked'
+                                  : player.player_value.toLocaleString()
+                              }}
                             </p>
                           </div>
                         </a-card>
@@ -343,7 +387,11 @@
                           >
                             <p v-if="player.player_position === 'QB'">
                               {{ player.full_name }} &bull;
-                              {{ player.player_value.toLocaleString() }}
+                              {{
+                                player.player_value === -1
+                                  ? 'Unranked'
+                                  : player.player_value.toLocaleString()
+                              }}
                             </p>
                           </div>
                         </a-card>
@@ -360,7 +408,11 @@
                           >
                             <p v-if="player.player_position === 'RB'">
                               {{ player.full_name }} &bull;
-                              {{ player.player_value.toLocaleString() }}
+                              {{
+                                player.player_value === -1
+                                  ? 'Unranked'
+                                  : player.player_value.toLocaleString()
+                              }}
                             </p>
                           </div>
                         </a-card>
@@ -377,7 +429,11 @@
                           >
                             <p v-if="player.player_position === 'WR'">
                               {{ player.full_name }} &bull;
-                              {{ player.player_value.toLocaleString() }}
+                              {{
+                                player.player_value === -1
+                                  ? 'Unranked'
+                                  : player.player_value.toLocaleString()
+                              }}
                             </p>
                           </div>
                         </a-card>
@@ -393,7 +449,11 @@
                           >
                             <p v-if="player.player_position === 'TE'">
                               {{ player.full_name }} &bull;
-                              {{ player.player_value.toLocaleString() }}
+                              {{
+                                player.player_value === -1
+                                  ? 'Unranked'
+                                  : player.player_value.toLocaleString()
+                              }}
                             </p>
                           </div>
                         </a-card>
@@ -478,7 +538,11 @@
                               >
                                 <p v-if="player.player_position === 'QB'">
                                   {{ player.full_name }}
-                                  {{ player.player_value.toLocaleString() }}
+                                  {{
+                                    player.player_value === -1
+                                      ? 'Unranked'
+                                      : player.player_value.toLocaleString()
+                                  }}
                                 </p>
                               </div>
                             </a-card>
@@ -495,7 +559,11 @@
                               >
                                 <p v-if="player.player_position === 'RB'">
                                   {{ player.full_name }}
-                                  {{ player.player_value.toLocaleString() }}
+                                  {{
+                                    player.player_value === -1
+                                      ? 'Unranked'
+                                      : player.player_value.toLocaleString()
+                                  }}
                                 </p>
                               </div>
                             </a-card>
@@ -512,7 +580,11 @@
                               >
                                 <p v-if="player.player_position === 'WR'">
                                   {{ player.full_name }}
-                                  {{ player.player_value.toLocaleString() }}
+                                  {{
+                                    player.player_value === -1
+                                      ? 'Unranked'
+                                      : player.player_value.toLocaleString()
+                                  }}
                                 </p>
                               </div>
                             </a-card>
@@ -525,7 +597,11 @@
                               >
                                 <p v-if="player.player_position === 'TE'">
                                   {{ player.full_name }}
-                                  {{ player.player_value.toLocaleString() }}
+                                  {{
+                                    player.player_value === -1
+                                      ? 'Unranked'
+                                      : player.player_value.toLocaleString()
+                                  }}
                                 </p>
                               </div>
                             </a-card>
@@ -559,35 +635,55 @@
                         player.player_position
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
-                      {{ player.player_value.toLocaleString() }}
+                      {{
+                        player.player_value === -1
+                          ? 'Unranked'
+                          : player.player_value.toLocaleString()
+                      }}
                     </div>
                     <div v-if="player.player_position === 'RB'">
                       <a-tag :style="getPositionTag(player.player_position)">{{
                         player.player_position
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
-                      {{ player.player_value.toLocaleString() }}
+                      {{
+                        player.player_value === -1
+                          ? 'Unranked'
+                          : player.player_value.toLocaleString()
+                      }}
                     </div>
                     <div v-if="player.player_position === 'WR'">
                       <a-tag :style="getPositionTag(player.player_position)">{{
                         player.player_position
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
-                      {{ player.player_value.toLocaleString() }}
+                      {{
+                        player.player_value === -1
+                          ? 'Unranked'
+                          : player.player_value.toLocaleString()
+                      }}
                     </div>
                     <div v-if="player.player_position === 'TE'">
                       <a-tag :style="getPositionTag(player.player_position)">{{
                         player.player_position
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
-                      {{ player.player_value.toLocaleString() }}
+                      {{
+                        player.player_value === -1
+                          ? 'Unranked'
+                          : player.player_value.toLocaleString()
+                      }}
                     </div>
                     <div v-if="player.player_position === 'PICKS'">
                       <a-tag :style="getPositionTag(player.player_position)">{{
                         player.player_position
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
-                      {{ player.player_value.toLocaleString() }}
+                      {{
+                        player.player_value === -1
+                          ? 'Unranked'
+                          : player.player_value.toLocaleString()
+                      }}
                     </div>
                   </div>
                 </a-card>
@@ -612,7 +708,11 @@
                         >
                           <div v-if="player.player_position === position">
                             {{ index + 1 }}. {{ player.full_name }} &bull;
-                            {{ player.player_value.toLocaleString() }}
+                            {{
+                              player.player_value === -1
+                                ? 'Unranked'
+                                : player.player_value.toLocaleString()
+                            }}
                           </div>
                         </div>
                       </a-card>
@@ -780,7 +880,12 @@
                       <a-tag :style="getPositionTag(position)" size="large">{{ position }}</a-tag>
                     </template>
                     <p v-for="player in players" :key="player.sleeper_id">
-                      {{ player.full_name }} &bull; {{ player.player_value }}
+                      {{ player.full_name }} &bull;
+                      {{
+                        player.player_value === -1
+                          ? 'Unranked'
+                          : player.player_value?.toLocaleString()
+                      }}
                     </p>
                   </a-card>
                 </a-col>
@@ -797,27 +902,53 @@
 <script lang="ts" setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+
+import AppHeader from '@/components/AppHeader.vue'
+import AppFooter from '@/components/AppFooter.vue'
+
+// 3rd Party imports
 import axios from 'axios'
-import { message, Spin, Column } from 'ant-design-vue'
+
+// Platform Utils
+import { message, Spin, Column, Empty, MenuProps } from 'ant-design-vue'
 import MeterGroup from 'primevue/metergroup'
-import Card from 'primevue/card'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import Chart from 'primevue/chart'
 import 'primeicons/primeicons.css'
 
-import AppHeader from '@/components/AppHeader.vue'
-import AppFooter from '@/components/AppFooter.vue'
-import { UserOutlined, AntDesignOutlined } from '@ant-design/icons-vue'
-
+// Custom Utils
 import { addOrdinalSuffix } from '../utils/suffix'
 import { getCellStyle } from '../utils/colorTable'
-import { Empty } from 'ant-design-vue'
-const simpleImage = Empty.PRESENTED_IMAGE_SIMPLE
-import type { SelectProps } from 'ant-design-vue'
-import { Item } from 'ant-design-vue/es/menu'
 
 const route = useRoute()
+
+const handleButtonClick = (e: Event) => {
+  console.log('click left button', e)
+}
+const handleMenuClick: MenuProps['onClick'] = (e) => {
+  console.log(e.key)
+  const leagueId = leagueInfo.leagueId
+  const platform = e.key
+  try {
+    fetchSummaryData(leagueId, platform, rankType, guid, rosterType)
+    fetchDetailData(leagueId, platform, rankType, guid, rosterType)
+    fetchBaData(leagueId, platform, rankType, guid, rosterType)
+  } catch {
+    console.log('error loading leagues')
+  } finally {
+    source.value =
+      platform === 'ktc'
+        ? 'KeepTradeCut'
+        : platform === 'fc'
+          ? 'FantasyCalc'
+          : platform === 'sf'
+            ? 'SuperFlex'
+            : platform === 'dp'
+              ? 'DynastyProcess'
+              : platform
+  }
+}
 
 const leagueName = route.params.leagueName
 const leagueYear = route.params.leagueYear
@@ -828,6 +959,9 @@ const platform = route.params.platform
 const rankType = route.params.rankType
 const userId = route.params.userId
 const rosterType = route.params.rosterType
+const avatar = route.params.avatar
+
+const simpleImage = Empty.PRESENTED_IMAGE_SIMPLE
 
 // Sample league information
 const leagueInfo = reactive({
@@ -839,7 +973,8 @@ const leagueInfo = reactive({
   rankType: rankType as string,
   platform: platform as string,
   userId: userId as string,
-  rosterType: rosterType as string
+  rosterType: rosterType as string,
+  avatar: avatar as string
 })
 
 const summaryData = ref([])
@@ -858,8 +993,7 @@ const isProjectionLoading = ref(false)
 
 const selection = ref({})
 const value1 = ref('Choose Projection')
-const value2 = ref('lucy')
-const value3 = ref('lucy')
+const source = ref('Superflex')
 
 const options1 = ref<SelectProps['options']>([
   {
@@ -1099,7 +1233,7 @@ const columns: Column[] = [
     width: 1
   },
   {
-    title: 'Rank',
+    title: 'Stack Rank',
     dataIndex: 'display_name',
     key: 'display_name',
     align: 'left',
@@ -1772,5 +1906,64 @@ table {
   position: relative;
   margin: auto;
   max-width: 1100px;
+}
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title-container {
+  flex-grow: 1;
+}
+
+.controls-container {
+  display: flex;
+  gap: 10px;
+}
+
+.dropdown-button,
+.load-league-button {
+  /* Button styles */
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .controls-container {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+/* This is the base style, for mobile screens */
+.responsive-padding {
+  padding: 0 16px; /* Small padding for small screens */
+}
+
+/* Media query for screens wider than 768px */
+@media (min-width: 768px) {
+  .responsive-padding {
+    padding: 0 100px; /* Larger padding for larger screens */
+  }
+}
+
+.league-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 7px;
+  border: 1px solid gray;
+  margin-right: 10px;
+}
+
+.league-title {
+  display: flex;
+  align-items: center; /* Aligns the children vertically in the center */
+  justify-content: left; /* Centers the children horizontally */
+  flex-wrap: wrap; /* Allows children to wrap to next line as needed */
+  text-align: center; /* Ensures text is centered if it wraps */
 }
 </style>

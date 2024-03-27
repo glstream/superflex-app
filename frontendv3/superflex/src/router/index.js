@@ -18,7 +18,7 @@ const router = createRouter({
       component: () => import('../components/LeagueView.vue')
     },
     {
-      path: '/league/:leagueId/:platform/:rankType/:guid/:leagueYear/:userName/:leagueName/:rosterType/:userId',
+      path: '/league/:leagueId/:platform/:rankType/:guid/:leagueYear/:userName/:leagueName/:rosterType/:userId/:avatar',
       component: () => import('../components/LeagueDetailView.vue')
     }
   ]

@@ -49,12 +49,19 @@
 </template>
 <script lang="ts" setup>
 import { reactive } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router' // Import useRouter for programmatic navigation
+import { useRouter } from 'vue-router'
+
+// Site tags
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 
+// 3rd Part Utils
+import axios from 'axios'
+
+// Custom Utils
 import { useGuid } from '../utils/guid'
+
+const router = useRouter()
 
 interface FormState {
   userName: string
@@ -65,8 +72,6 @@ const formState = reactive<FormState>({
   userName: '',
   leagueYear: '2024'
 })
-
-const router = useRouter() // Use the useRouter composable to get access to the router instance
 
 const onFinish = async (values: any) => {
   try {

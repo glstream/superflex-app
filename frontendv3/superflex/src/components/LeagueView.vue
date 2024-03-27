@@ -1,7 +1,7 @@
 <template>
   <a-layout class="layout">
     <AppHeader />
-    <a-layout-content class="main-content" style="padding: 0 50px; flex-grow: 1">
+    <a-layout-content class="main-content" style="padding: 0 100px; flex-grow: 1">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
         <a-breadcrumb-item><a :href="leaguesUrl">Leagues</a></a-breadcrumb-item>
@@ -36,6 +36,9 @@
             >
               <a-tab-pane key="1" tab="Keep Trade Cut" data-metadata="ktc">
                 <a-spin :spinning="isLoading">
+                  <a-button style="float: right" type="primary" @click="getLeagueDetail()"
+                    >League Details</a-button
+                  >
                   <div class="tags-container" v-if="positionalRanks.length > 0">
                     <div
                       class="tag-group"
@@ -76,6 +79,9 @@
 
               <a-tab-pane key="2" tab="Superflex" data-metadata="sf">
                 <a-spin :spinning="isLoading">
+                  <a-button style="float: right" type="primary" @click="getLeagueDetail()"
+                    >League Details</a-button
+                  >
                   <div class="tags-container" v-if="positionalRanks.length > 0">
                     <div
                       class="tag-group"
@@ -114,6 +120,9 @@
               ></a-tab-pane>
               <a-tab-pane key="3" tab="FantasyCalc">
                 <a-spin :spinning="isLoading">
+                  <a-button style="float: right" type="primary" @click="getLeagueDetail()"
+                    >League Details</a-button
+                  >
                   <div class="tags-container" v-if="positionalRanks.length > 0">
                     <div
                       class="tag-group"
@@ -152,6 +161,9 @@
               ></a-tab-pane>
               <a-tab-pane key="4" tab="DynastyProcess">
                 <a-spin :spinning="isLoading">
+                  <a-button style="float: right" type="primary" @click="getLeagueDetail()"
+                    >League Details</a-button
+                  >
                   <div class="tags-container" v-if="positionalRanks.length > 0">
                     <div
                       class="tag-group"
@@ -203,6 +215,9 @@
             >
               <a-tab-pane key="5" tab="ESPN" force-render>
                 <a-spin :spinning="contenderIsLoading">
+                  <a-button style="float: right" type="primary" @click="getLeagueDetail()"
+                    >League Details</a-button
+                  >
                   <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
                     <div
                       class="tag-group"
@@ -243,6 +258,9 @@
               ></a-tab-pane>
               <a-tab-pane key="6" tab="NFL" force-render>
                 <a-spin :spinning="contenderIsLoading">
+                  <a-button style="float: right" type="primary" @click="getLeagueDetail()"
+                    >League Details</a-button
+                  >
                   <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
                     <div
                       class="tag-group"
@@ -283,6 +301,9 @@
               ></a-tab-pane>
               <a-tab-pane key="7" tab="FantasyCalc" force-render>
                 <a-spin :spinning="contenderIsLoading">
+                  <a-button style="float: right" type="primary" @click="getLeagueDetail()"
+                    >League Details</a-button
+                  >
                   <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
                     <div
                       class="tag-group"
@@ -323,6 +344,9 @@
               ></a-tab-pane>
               <a-tab-pane key="9" tab="CBS" force-render>
                 <a-spin :spinning="contenderIsLoading">
+                  <a-button style="float: right" type="primary" @click="getLeagueDetail()"
+                    >League Details</a-button
+                  >
                   <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
                     <div
                       class="tag-group"
@@ -374,11 +398,16 @@
 import { reactive, ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import axios from 'axios'
-import type { TabsProps, message, Spin } from 'ant-design-vue'
-
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
+
+// 3rd Party imports
+import axios from 'axios'
+
+// Platform Utils
+import type { TabsProps, message, Spin } from 'ant-design-vue'
+
+// Custom Utils
 import { addOrdinalSuffix } from '../utils/suffix'
 
 const route = useRoute()
@@ -487,6 +516,21 @@ const insertLeagueDetials = async (values: any) => {
 
     fetchLeagueData(leagueId, platform, rankType, guid, rosterType)
     contenderFetchLeagueData(leagueId, contenderPlatform, contenderRankType, guid, rosterType)
+  }
+}
+
+const getLeagueDetail = async (values: any) => {
+  try {
+    console.log('attempt get leagye')
+
+    router.push(
+      `/league/${leagueId}/ktc/power/${guid}/${leagueYear}/${userName}/${leagueName}/${rosterType}/${userId}`
+    )
+  } catch (error) {
+    console.error('Failed to load league details:', error)
+    // Optionally, update leagueDetails to indicate an error or show an error message
+  } finally {
+    console.log('complete')
   }
 }
 

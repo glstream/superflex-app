@@ -83,40 +83,77 @@ def league(league_id: str, platform: str, rank_type: str, guid: str, roster_type
     if platform == 'sf':
         league_pos_col = (
             "superflex_sf_pos_rank"
-            if league_type == "sf_value"
+            if roster_type == "sf_value"
             else "superflex_one_qb_pos_rank"
         )
         league_type = (
             "superflex_sf_value"
-            if league_type == "sf_value"
+            if roster_type == "sf_value"
             else "superflex_one_qb_value"
         )
-        with open(
-            Path.cwd() / "sql" / "summary" /
-            f"{rank_type}" / f"{platform}.sql",
-            "r",
-        ) as power_summary_file:
-            power_summary_sql = (
-                power_summary_file.read()
-                .replace("'session_id'", f"'{session_id}'")
-                .replace("league_type", f"{league_type}")
-                .replace("'league_id'", f"'{league_id}'")
-                .replace("league_pos_col", f"{league_pos_col}")
-            )
-
+    elif platform == 'fc':
+        league_pos_col = (
+            "sf_position_rank" if league_type == "sf_value" else "one_qb_position_rank"
+        )
     else:
-        with open(
-            Path.cwd() / "sql" / "summary" /
-            f"{rank_type}" / f"{platform}.sql",
-            "r",
-        ) as power_summary_file:
-            power_summary_sql = (
-                power_summary_file.read()
-                .replace("'session_id'", f"'{session_id}'")
-                .replace("'league_id'", f"'{league_id}'")
-                .replace("league_type", f"{league_type}")
-            )
+        league_pos_col = ''
+
+    with open(
+        Path.cwd() / "sql" / "summary" /
+        f"{rank_type}" / f"{platform}.sql",
+        "r",
+    ) as power_summary_file:
+        power_summary_sql = (
+            power_summary_file.read()
+            .replace("'session_id'", f"'{session_id}'")
+            .replace("'league_id'", f"'{league_id}'")
+            .replace("league_type", f"{league_type}")
+            .replace("league_pos_col", f"{league_pos_col}")
+        )
     cursor_.execute(power_summary_sql)
+    db_resp_obj = cursor_.fetchall()
+    cursor_.close()
+
+    return db_resp_obj
+
+
+@app.get("/league_detail")
+def league_detail(league_id: str, platform: str, rank_type: str, guid: str, roster_type: str, db: str = Depends(get_db)):
+
+    cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
+    session_id = guid
+    league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+
+    if platform == 'sf':
+
+        league_pos_col = (
+            "sf_position_rank" if league_type == "sf_value" else "superflex_one_qb_pos_rank"
+        )
+
+        league_type = (
+            "superflex_sf_value"
+            if roster_type == "sf_value"
+            else "superflex_one_qb_value"
+        )
+    elif platform == 'fc':
+        league_pos_col = (
+            "sf_position_rank" if league_type == "sf_value" else "one_qb_position_rank"
+        )
+    else:
+        league_pos_col = ''
+
+    with open(
+        Path.cwd() / "sql" / "details" / f"{rank_type}" / f"{platform}.sql",
+        "r",
+    ) as power_detail_file:
+        power_detail_sql = (
+            power_detail_file.read()
+            .replace("'session_id'", f"'{session_id}'")
+            .replace("'league_id'", f"'{league_id}'")
+            .replace("league_type", f"{league_type}")
+            .replace("league_pos_col", f"{league_pos_col}")
+        )
+    cursor_.execute(power_detail_sql)
     db_resp_obj = cursor_.fetchall()
     cursor_.close()
 
@@ -171,40 +208,15 @@ def contender_league_detail(league_id: str, projection_source: str, guid: str, d
     return db_resp_obj
 
 
-@app.get("/league_detail")
-def league_detail(league_id: str, platform: str, rank_type: str, guid: str, roster_type: str, db: str = Depends(get_db)):
-
-    cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
-    session_id = guid
-    league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
-    league_pos_col = (
-        "sf_position_rank" if league_type == "sf_value" else "one_qb_position_rank"
-    )
-
-    with open(
-        Path.cwd() / "sql" / "details" / f"{rank_type}" / f"{platform}.sql",
-        "r",
-    ) as power_detail_file:
-        power_detail_sql = (
-            power_detail_file.read()
-            .replace("'session_id'", f"'{session_id}'")
-            .replace("'league_id'", f"'{league_id}'")
-            .replace("league_type", f"{league_type}")
-            .replace("league_pos_col", f"{league_pos_col}")
-        )
-    cursor_.execute(power_detail_sql)
-    db_resp_obj = cursor_.fetchall()
-    cursor_.close()
-
-    return db_resp_obj
-
-
 @app.get("/best_avialable")
 def best_avialable(league_id: str, platform: str, rank_type: str, guid: str, roster_type: str, db: str = Depends(get_db)):
 
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
     session_id = guid
-    league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+    if platform == 'sf':
+        league_type = "superflex_sf_value " if roster_type == "sf_value" else "superflex_one_qb_value"
+    else:
+        league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
 
     with open(Path.cwd() / "sql" / "best_available" / f"{rank_type}" / f"{platform}.sql",
               "r",

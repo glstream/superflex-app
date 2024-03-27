@@ -1,31 +1,43 @@
 SELECT
                     t3.user_id
                     , t3.display_name
+                    , t3.avatar
                     , total_value
                     , ROW_NUMBER() OVER (order by sum(position_value) desc) total_rank 
                     , NTILE(10) OVER (order by total_value desc) total_tile
                     , max(qb_value) as qb_value
                     , RANK() OVER (order by sum(qb_value) desc) qb_rank
+                    , RANK() OVER (order by sum(qb_starter_value) desc) qb_starter_rank
                     , NTILE(10) OVER (order by sum(qb_value) desc) qb_tile
                     , sum(qb_value) as qb_sum
+                    , sum(qb_starter_value) as qb_starter_sum
 					, coalesce(round(sum(qb_value) / NULLIF(sum(qb_count), 0),0),0) as qb_average
 					, sum(qb_count) as qb_count
                     , max(rb_value) as rb_value
+                    , max(rb_starter_value) as rb_starter_value
                     , RANK() OVER (order by sum(rb_value) desc) rb_rank
+                    , RANK() OVER (order by sum(rb_starter_value) desc) rb_starter_rank
                     , NTILE(10) OVER (order by sum(rb_value) desc) rb_tile
                     , sum(rb_value) as rb_sum
+                    , sum(rb_starter_value) as rb_starter_sum
 					, coalesce(round(sum(rb_value) / NULLIF(sum(rb_count), 0),0),0) as rb_average
 					, sum(rb_count) as rb_count
                     , max(wr_value) as wr_value
+                    , max(wr_starter_value) as wr_starter_value
                     , RANK() OVER (order by sum(wr_value) desc) wr_rank
+                    , RANK() OVER (order by sum(wr_starter_value) desc) wr_starter_rank
                     , NTILE(10) OVER (order by sum(wr_value) desc) wr_tile
                     , sum(wr_value) as wr_sum
+                    , sum(wr_starter_value) as wr_starter_sum
 					, coalesce(round(sum(wr_value) / NULLIF(sum(wr_count), 0),0),0) as wr_average
 					, sum(wr_count) as wr_count
                     , max(te_value) as te_value
+                    , max(te_starter_value) as te_starter_value
                     , RANK() OVER (order by sum(te_value) desc) te_rank
+                    , RANK() OVER (order by sum(te_starter_value) desc) te_starter_rank
                     , NTILE(10) OVER (order by sum(te_value) desc) te_tile
                     , sum(te_value) as te_sum
+                    , sum(te_starter_value) as te_starter_sum
 					, coalesce(round(sum(te_value) / NULLIF(sum(te_count), 0),0),0) as te_average
 					, sum(te_count) as wr_count
                     , max(picks_value) as picks_value
@@ -53,17 +65,23 @@ SELECT
                     from (select
                         user_id
                         , display_name
+                        , avatar
                         , sum(player_value) as position_value
                         , total_value
                         , DENSE_RANK() OVER (PARTITION BY fantasy_position  order by sum(player_value) desc) as position_rank
-                        , DENSE_RANK() OVER (order by total_value desc) as total_rank                        , fantasy_position
+                        , DENSE_RANK() OVER (order by total_value desc) as total_rank                        
+                        , fantasy_position
                         , case when player_position = 'QB' THEN sum(player_value) else 0 end as qb_value
+                        , case when player_position = 'QB' AND fantasy_designation = 'STARTER' THEN sum(player_value) else 0 end as qb_starter_value
 						, case when player_position = 'QB' THEN count(full_name) else 0 end as qb_count
                         , case when player_position = 'RB' THEN sum(player_value) else 0 end as rb_value
+                        , case when player_position = 'RB' AND fantasy_designation = 'STARTER' THEN sum(player_value) else 0 end as rb_starter_value
 						, case when player_position = 'RB' THEN count(full_name) else 0 end as rb_count
                         , case when player_position = 'WR' THEN sum(player_value) else 0 end as wr_value
+                        , case when player_position = 'WR' AND fantasy_designation = 'STARTER' THEN sum(player_value) else 0 end as wr_starter_value
 						, case when player_position = 'WR' THEN count(full_name) else 0 end as wr_count
                         , case when player_position = 'TE' THEN sum(player_value) else 0 end as te_value
+                        , case when player_position = 'TE' AND fantasy_designation = 'STARTER' THEN sum(player_value) else 0 end as te_starter_value
 						, case when player_position = 'TE' THEN count(full_name) else 0 end as te_count
                         , case when player_position = 'PICKS' THEN sum(player_value) else 0 end as picks_value
                         , case when fantasy_position = 'FLEX' THEN sum(player_value) else 0 end as flex_value
@@ -75,6 +93,7 @@ SELECT
                         from (SELECT
                         asset.user_id
                         , asset.display_name
+                        , asset.avatar
                         , asset.full_name
                         , asset.player_position
                         , asset.fantasy_position
@@ -255,6 +274,7 @@ SELECT
                                             
                     SELECT tp.user_id
                     ,m.display_name
+                    ,m.avatar
                     ,tp.player_full_name as full_name
 					,lower(p.first_name) as first_name
 					,lower(p.last_name) as last_name
@@ -336,12 +356,13 @@ SELECT
                     inner join dynastr.managers m on tp.user_id = m.user_id 
                     where 1=1
                     and fc.rank_type = 'dynasty'
-                    order by pick_year, m.display_name, player_value desc, tp.player_full_name	asc
+                    order by pick_year, m.display_name, m.avatar, player_value desc, tp.player_full_name	asc
                     ) asset  
                             ) t2
                             GROUP BY
                              t2.user_id
                             , t2.display_name
+                            , t2.avatar
                             , t2.total_value
                             , t2.fantasy_position
                             , t2.player_position
@@ -349,6 +370,7 @@ SELECT
                                 GROUP BY
                                     t3.user_id
                                     , t3.display_name
+                                    , t3.avatar
                                     , t3.total_value
                                     , total_rank
                                 ORDER BY                                                        

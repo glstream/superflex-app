@@ -1,5 +1,5 @@
 <template>
   <a-layout-footer style="text-align: center">
-    LeagueView ©2024 Created using Ant Design Vue
+    Dynasty SuperFlex ©2024 Created by Grayson Stream
   </a-layout-footer>
 </template>
