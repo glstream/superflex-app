@@ -1531,23 +1531,24 @@ const insertLeagueDetials = async (values: any) => {
     // Optionally, update leagueDetails to indicate an error or show an error message
   } finally {
     isLoading.value = false // Update loading state
+
     fetchSummaryData(
       leagueInfo.leagueId,
-      leagueInfo.platform,
+      platform,
       leagueInfo.rankType,
       leagueInfo.guid,
       leagueInfo.rosterType
     )
     fetchDetailData(
       leagueInfo.leagueId,
-      leagueInfo.platform,
+      platform,
       leagueInfo.rankType,
       leagueInfo.guid,
       leagueInfo.rosterType
     )
     fetchBaData(
       leagueInfo.leagueId,
-      leagueInfo.platform,
+      platform,
       leagueInfo.rankType,
       leagueInfo.guid,
       leagueInfo.rosterType

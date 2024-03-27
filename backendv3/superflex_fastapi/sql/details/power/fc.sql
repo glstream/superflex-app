@@ -253,4 +253,4 @@ WITH base_players as (SELECT
                     inner join dynastr.managers m on tp.user_id = m.user_id 
                     where 1=1
                     and fc.rank_type = 'dynasty'
-                    order by pick_year, m.display_name, player_value desc, tp.player_full_name	asc	
+                    order by player_value desc, tp.player_full_name	asc	
