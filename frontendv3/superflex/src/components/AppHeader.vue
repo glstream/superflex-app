@@ -4,8 +4,8 @@
     <div class="logo" :style="{ backgroundImage: 'url(' + logoImg + ')' }"></div>
     <a-menu theme="dark" mode="horizontal" :default-selected-keys="['1']">
       <a-menu-item key="1"><router-link to="/username">Home</router-link></a-menu-item>
-      <a-menu-item key="2"><router-link to="/username">Leagues</router-link></a-menu-item>
-      <a-menu-item key="3"><router-link to="/username">Ranks</router-link></a-menu-item>
+      <a-menu-item key="2"><router-link :to="leaguesUrl">Leagues</router-link></a-menu-item>
+      <a-menu-item key="3"><router-link to="/ranks">Ranks</router-link></a-menu-item>
       <a-menu-item key="4"><router-link to="/username">Trade Calculator</router-link></a-menu-item>
       <a-menu-item key="5"><router-link to="/username">About</router-link></a-menu-item>
       <!-- Add more menu items as needed -->
@@ -15,6 +15,8 @@
 
 <script setup>
 import logoImg from '@/assets/logo_small.png' // Adjust the path as necessary
+// const leaguesUrl = `/leagues/${leagueYear}/${userName}/${guid}`
+const leaguesUrl = `/leagues/2024/gray_matter/788003ab-8b0c-415e-ba1b-593d24a4003c`
 </script>
 
 <style scoped>

@@ -64,24 +64,28 @@
         </div>
         <div class="controls-container">
           <a-dropdown-button @click="handleButtonClick" class="dropdown-button">
-            Ranking Source
+            {{ source }}
             <template #overlay>
               <a-menu @click="handleMenuClick">
                 <a-menu-item key="sf">
                   <UserOutlined />
-                  SuperFlex
+                  <img style="padding-right: 5px" class="dropdown-img" :src="sfLogo" />SuperFlex
                 </a-menu-item>
                 <a-menu-item key="ktc">
                   <UserOutlined />
-                  KeepTradeCut
+                  <img style="padding-right: 5px" class="dropdown-img" :src="ktcLogo" />KeepTradeCut
                 </a-menu-item>
                 <a-menu-item key="dp">
                   <UserOutlined />
-                  DynastyProcess
+                  <img
+                    style="padding-right: 5px"
+                    class="dropdown-img"
+                    :src="dpLogo"
+                  />DynastyProcess
                 </a-menu-item>
                 <a-menu-item key="fc">
                   <UserOutlined />
-                  FantasyCalc
+                  <img style="padding-right: 5px" class="dropdown-img" :src="fcLogo" />FantasyCalc
                 </a-menu-item>
               </a-menu>
             </template>
@@ -143,7 +147,7 @@
                         record.te_percent +
                         record.picks_percent
                       "
-                      :strokeColor="getProgressColor('Picks')"
+                      :strokeColor="getPositionColor('Picks')"
                       strokeWidth="25"
                       class="overlay-progress-overall"
                       :show-info="false"
@@ -156,7 +160,7 @@
                           record.wr_percent +
                           record.te_percent
                         "
-                        :strokeColor="getProgressColor('TE')"
+                        :strokeColor="getPositionColor('TE')"
                         strokeWidth="25"
                         class="overlay-progress-overall"
                         :show-info="false"
@@ -165,7 +169,7 @@
 
                     <a-progress
                       :percent="record.qb_percent + record.rb_percent + record.wr_percent"
-                      :strokeColor="getProgressColor('WR')"
+                      :strokeColor="getPositionColor('WR')"
                       strokeWidth="25"
                       class="overlay-progress-overall"
                       :show-info="false"
@@ -173,7 +177,7 @@
 
                     <a-progress
                       :percent="record.qb_percent + record.rb_percent"
-                      :strokeColor="getProgressColor('RB')"
+                      :strokeColor="getPositionColor('RB')"
                       strokeWidth="25"
                       class="overlay-progress-overall"
                       :show-info="false"
@@ -188,7 +192,7 @@
           `"
                       ><a-progress
                         :percent="record.qb_percent"
-                        :strokeColor="getProgressColor('QB')"
+                        :strokeColor="getPositionColor('QB')"
                         strokeWidth="25"
                         class="overlay-progress-overall"
                         :show-info="false"
@@ -739,7 +743,7 @@
                       :title="`${addOrdinalSuffix(leagueOwnerData.qb_rank)} ${leagueOwnerData.qb_sum?.toLocaleString()}`"
                       ><a-progress
                         :percent="(leagueOwnerData.qb_sum / leagueOwnerData.qb_max_value) * 100"
-                        :strokeColor="getProgressColor('QB')"
+                        :strokeColor="getPositionColor('QB')"
                         strokeWidth="15"
                         :format="(percent) => `${leagueOwnerData.qb_max_value?.toLocaleString()}`"
                       />
@@ -749,7 +753,7 @@
                       :title="`${addOrdinalSuffix(leagueOwnerData.rb_rank)} ${leagueOwnerData.rb_sum?.toLocaleString()}`"
                       ><a-progress
                         :percent="(leagueOwnerData.rb_sum / leagueOwnerData.rb_max_value) * 100"
-                        :strokeColor="getProgressColor('RB')"
+                        :strokeColor="getPositionColor('RB')"
                         strokeWidth="15"
                         :format="(percent) => `${leagueOwnerData.rb_max_value?.toLocaleString()}`"
                       />
@@ -759,7 +763,7 @@
                       :title="`${addOrdinalSuffix(leagueOwnerData.wr_rank)} ${leagueOwnerData.wr_sum?.toLocaleString()}`"
                       ><a-progress
                         :percent="(leagueOwnerData.wr_sum / leagueOwnerData.wr_max_value) * 100"
-                        :strokeColor="getProgressColor('WR')"
+                        :strokeColor="getPositionColor('WR')"
                         strokeWidth="15"
                         :format="(percent) => `${leagueOwnerData.wr_max_value?.toLocaleString()}`"
                       />
@@ -769,7 +773,7 @@
                       :title="`${addOrdinalSuffix(leagueOwnerData.te_rank)} ${leagueOwnerData.te_sum?.toLocaleString()}`"
                       ><a-progress
                         :percent="(leagueOwnerData.te_sum / leagueOwnerData.te_max_value) * 100"
-                        :strokeColor="getProgressColor('TE')"
+                        :strokeColor="getPositionColor('TE')"
                         strokeWidth="15"
                         :format="(percent) => `${leagueOwnerData.te_max_value?.toLocaleString()}`"
                       />
@@ -782,7 +786,7 @@
                           :percent="
                             (leagueOwnerData.picks_sum / leagueOwnerData.picks_max_value) * 100
                           "
-                          :strokeColor="getProgressColor('Picks')"
+                          :strokeColor="getPositionColor('Picks')"
                           strokeWidth="15"
                           :format="
                             (percent) => `${leagueOwnerData.picks_max_value?.toLocaleString()}`
@@ -806,7 +810,7 @@
                           (leagueOwnerData.qb_starter_sum / leagueOwnerData.qb_max_starter_value) *
                           100
                         "
-                        :strokeColor="getProgressColor('QB')"
+                        :strokeColor="getPositionColor('QB')"
                         strokeWidth="15"
                         :format="
                           (percent) => `${leagueOwnerData.qb_max_starter_value?.toLocaleString()}`
@@ -821,7 +825,7 @@
                           (leagueOwnerData.rb_starter_sum / leagueOwnerData.rb_max_starter_value) *
                           100
                         "
-                        :strokeColor="getProgressColor('RB')"
+                        :strokeColor="getPositionColor('RB')"
                         strokeWidth="15"
                         :format="
                           (percent) => `${leagueOwnerData.rb_max_starter_value?.toLocaleString()}`
@@ -836,7 +840,7 @@
                           (leagueOwnerData.wr_starter_sum / leagueOwnerData.wr_max_starter_value) *
                           100
                         "
-                        :strokeColor="getProgressColor('WR')"
+                        :strokeColor="getPositionColor('WR')"
                         strokeWidth="15"
                         :format="
                           (percent) => `${leagueOwnerData.wr_max_starter_value?.toLocaleString()}`
@@ -851,7 +855,7 @@
                           (leagueOwnerData.te_starter_sum / leagueOwnerData.te_max_starter_value) *
                           100
                         "
-                        :strokeColor="getProgressColor('TE')"
+                        :strokeColor="getPositionColor('TE')"
                         strokeWidth="15"
                         :format="
                           (percent) => `${leagueOwnerData.te_max_starter_value?.toLocaleString()}`
@@ -923,6 +927,11 @@ import { getCellStyle } from '../utils/colorTable'
 
 const route = useRoute()
 
+const sfLogo = ref('src/assets/sourceLogos/sf.png')
+const ktcLogo = ref('src/assets/sourceLogos/ktc.png')
+const dpLogo = ref('src/assets/sourceLogos/dp.png')
+const fcLogo = ref('src/assets/sourceLogos/fc.png')
+
 const handleButtonClick = (e: Event) => {
   console.log('click left button', e)
 }
@@ -937,16 +946,27 @@ const handleMenuClick: MenuProps['onClick'] = (e) => {
   } catch {
     console.log('error loading leagues')
   } finally {
-    source.value =
-      platform === 'ktc'
-        ? 'KeepTradeCut'
-        : platform === 'fc'
-          ? 'FantasyCalc'
-          : platform === 'sf'
-            ? 'SuperFlex'
-            : platform === 'dp'
-              ? 'DynastyProcess'
-              : platform
+    switch (e.key) {
+      case 'sf':
+        source.value = 'SuperFlex'
+        apiSource.value = 'sf'
+        break
+      case 'dp':
+        source.value = 'DynastyProcess'
+        apiSource.value = 'dp'
+        break
+      case 'ktc':
+        source.value = 'KeepTradeCut'
+        apiSource.value = 'ktc'
+        break
+      case 'fc':
+        source.value = 'FantasyCalc'
+        apiSource.value = 'fc'
+        break
+      default:
+        source.value = 'sf'
+        apiSource.value = 'sf'
+    }
   }
 }
 
@@ -992,8 +1012,9 @@ const detailIsLoading = ref(false)
 const isProjectionLoading = ref(false)
 
 const selection = ref({})
+const apiSource = ref('sf')
 const value1 = ref('Choose Projection')
-const source = ref('Superflex')
+const source = ref('SuperFlex')
 
 const options1 = ref<SelectProps['options']>([
   {
@@ -1438,7 +1459,7 @@ onMounted(() => {
   }
 })
 
-function getProgressColor(position: string): string {
+function getPositionColor(position: string): string {
   if (position === 'QB') {
     return 'rgb(39, 125, 161)'
   } else if (position === 'RB') {
@@ -1517,6 +1538,7 @@ const insertLeagueDetials = async (values: any) => {
   console.log(userId)
   console.log(guid)
   console.log(leagueYear)
+
   try {
     const response = await axios.post('http://127.0.0.1:8000/roster', {
       league_id: leagueInfo.leagueId,
@@ -1534,21 +1556,21 @@ const insertLeagueDetials = async (values: any) => {
 
     fetchSummaryData(
       leagueInfo.leagueId,
-      platform,
+      apiSource.value,
       leagueInfo.rankType,
       leagueInfo.guid,
       leagueInfo.rosterType
     )
     fetchDetailData(
       leagueInfo.leagueId,
-      platform,
+      apiSource.value,
       leagueInfo.rankType,
       leagueInfo.guid,
       leagueInfo.rosterType
     )
     fetchBaData(
       leagueInfo.leagueId,
-      platform,
+      apiSource.value,
       leagueInfo.rankType,
       leagueInfo.guid,
       leagueInfo.rosterType
@@ -1966,5 +1988,11 @@ table {
   justify-content: left; /* Centers the children horizontally */
   flex-wrap: wrap; /* Allows children to wrap to next line as needed */
   text-align: center; /* Ensures text is centered if it wraps */
+}
+.dropdown-img {
+  width: 24px;
+  height: 20px;
+  vertical-align: middle;
+  border-radius: 3px;
 }
 </style>

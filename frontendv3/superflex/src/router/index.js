@@ -14,12 +14,16 @@ const router = createRouter({
       component: () => import('../components/EnterUsername.vue')
     },
     {
-      path: '/leagueview/:userName/:userId/:leagueId/:leagueName/:leagueSetting/:leagueYear/:leagueStarters/:leagueSize/:leagueType/:guid/:rosterType',
+      path: '/leagueview/:userName/:userId/:leagueId/:leagueName/:leagueSetting/:leagueYear/:leagueStarters/:leagueSize/:leagueType/:guid/:rosterType/:avatar',
       component: () => import('../components/LeagueView.vue')
     },
     {
       path: '/league/:leagueId/:platform/:rankType/:guid/:leagueYear/:userName/:leagueName/:rosterType/:userId/:avatar',
       component: () => import('../components/LeagueDetailView.vue')
+    },
+    {
+      path: '/ranks',
+      component: () => import('../components/RanksView.vue')
     }
   ]
 })

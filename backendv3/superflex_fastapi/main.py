@@ -72,6 +72,20 @@ def get_user(user_name: str):
     return {"user_id": get_user_id(user_name)}
 
 
+@app.get('/ranks')
+def ranks(platform: str, db: str = Depends(get_db)):
+    cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
+
+    with open(Path.cwd() / "sql" / "player_values" / "power" / f"{platform}.sql", "r",) as player_values_file:
+        player_values_sql = player_values_file.read()
+
+    cursor_.execute(player_values_sql)
+    db_resp_obj = cursor_.fetchall()
+    cursor_.close()
+
+    return db_resp_obj
+
+
 @app.get("/league")
 def league(league_id: str, platform: str, rank_type: str, guid: str, roster_type: str, db: str = Depends(get_db)):
     print(league_id, platform, rank_type)

@@ -235,8 +235,9 @@ const getLeagueSummary = (record) => {
   const leagueName = record.league_name
   const rosterType = record.roster_type
   const userId = record.user_id
+  const avatar = record.avatar
 
-  const url = `/leagueview/${userName}/${userId}/${leagueId}/${leagueName}/${rosterType}/${leagueYear}/${record.starter_cnt}/${record.total_rosters}/${record.league_type}/${guid}/${rosterType}`
+  const url = `/leagueview/${userName}/${userId}/${leagueId}/${leagueName}/${rosterType}/${leagueYear}/${record.starter_cnt}/${record.total_rosters}/${record.league_type}/${guid}/${rosterType}/${avatar}`
 
   router.push(url)
 }
