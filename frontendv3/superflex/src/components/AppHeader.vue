@@ -6,8 +6,10 @@
       <a-menu-item key="1"><router-link to="/username">Home</router-link></a-menu-item>
       <a-menu-item key="2"><router-link :to="leaguesUrl">Leagues</router-link></a-menu-item>
       <a-menu-item key="3"><router-link to="/ranks">Ranks</router-link></a-menu-item>
-      <a-menu-item key="4"><router-link to="/username">Trade Calculator</router-link></a-menu-item>
-      <a-menu-item key="5"><router-link to="/username">About</router-link></a-menu-item>
+      <a-menu-item key="4"
+        ><router-link to="/tradecalculator">Trade Calculator</router-link></a-menu-item
+      >
+      <a-menu-item key="5"><router-link to="/about">About</router-link></a-menu-item>
       <!-- Add more menu items as needed -->
     </a-menu>
   </a-layout-header>

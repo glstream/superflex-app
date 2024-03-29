@@ -24,6 +24,14 @@ const router = createRouter({
     {
       path: '/ranks',
       component: () => import('../components/RanksView.vue')
+    },
+    {
+      path: '/tradecalculator',
+      component: () => import('../components/TradeCalculatorView.vue')
+    },
+    {
+      path: '/about',
+      component: () => import('../components/AboutView.vue')
     }
   ]
 })

@@ -152,12 +152,6 @@ onMounted(() => {
   fetchRanks(platform.value)
 })
 
-const filteredData = computed(() => {
-  return ranksData.value.filter((item) => {
-    return state.checked1 ? item._rank_type === 'sf_value' : item._rank_type === 'one_qb_value'
-  })
-})
-
 const handleMenuClick: MenuProps['onClick'] = (e) => {
   console.log(e.key)
   const platform = e.key
@@ -169,23 +163,18 @@ const handleMenuClick: MenuProps['onClick'] = (e) => {
     switch (e.key) {
       case 'sf':
         source.value = 'SuperFlex'
-        logoSource.value = 'src/assets/sourceLogos/sf.png'
         break
       case 'dp':
         source.value = 'DynastyProcess'
-        logoSource.value = 'src/assets/sourceLogos/dp.png'
         break
       case 'ktc':
         source.value = 'KeepTradeCut'
-        logoSource.value = 'src/assets/sourceLogos/ktc.png'
         break
       case 'fc':
         source.value = 'FantasyCalc'
-        logoSource.value = 'src/assets/sourceLogos/fc.png'
         break
       default:
         source.value = 'sf'
-        logoSource.value = 'src/assets/sourceLogos/sf.png'
     }
   }
 }

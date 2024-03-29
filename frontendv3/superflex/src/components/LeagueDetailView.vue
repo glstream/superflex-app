@@ -24,7 +24,7 @@
                 placement="top"
               >
                 <a-avatar
-                  :src="`https://sleepercdn.com/avatars/thumbs/${leagueInfo.avatar}`"
+                  :src="`https://sleepercdn.com/avatars/thumbs/${user.avatar}`"
                   maxPopoverTrigger="hover"
                   :size="45"
                   style="border: 2px solid gold"
@@ -60,6 +60,7 @@
             {{ leagueInfo.leagueName }}
 
             <a-tag color="cyan" size="large" style="margin-left: 15px">{{ source }}</a-tag>
+            <a-tag style="margin-left: 15px">{{ leagueInfo.rosterType }}</a-tag>
           </h2>
         </div>
         <div class="controls-container">
@@ -102,6 +103,7 @@
       <a-spin tip="Loading..." :spinning="summaryIsLoading">
         <TabView :scrollable="true">
           <TabPanel header="Overall">
+            <h2 style="text-align: left">Power Ranks</h2>
             <div class="legend">
               <div class="legend-item">
                 <span class="legend-color" style="background-color: rgb(39, 125, 161)"></span>
@@ -218,7 +220,7 @@
                               {{ player.full_name }}
                               {{
                                 player.player_value === -1
-                                  ? 'Unranked'
+                                  ? 'N/A'
                                   : player.player_value.toLocaleString()
                               }}
                             </p>
@@ -239,7 +241,7 @@
                               {{ player.full_name }}
                               {{
                                 player.player_value === -1
-                                  ? 'Unranked'
+                                  ? 'N/A'
                                   : player.player_value.toLocaleString()
                               }}
                             </p>
@@ -260,7 +262,7 @@
                               {{ player.full_name }}
                               {{
                                 player.player_value === -1
-                                  ? 'Unranked'
+                                  ? 'N/A'
                                   : player.player_value.toLocaleString()
                               }}
                             </p>
@@ -277,7 +279,7 @@
                               {{ player.full_name }}
                               {{
                                 player.player_value === -1
-                                  ? 'Unranked'
+                                  ? 'N/A'
                                   : player.player_value.toLocaleString()
                               }}
                             </p>
@@ -294,7 +296,7 @@
                               {{ player.full_name }}
                               {{
                                 player.player_value === -1
-                                  ? 'Unranked'
+                                  ? 'N/A'
                                   : player.player_value.toLocaleString()
                               }}
                             </p>
@@ -367,6 +369,7 @@
             </div>
           </TabPanel>
           <TabPanel header="Starters">
+            <h2 style="text-align: left">Starting Rosters</h2>
             <div class="table-section" style="flex: 2">
               <a-table
                 :data-source="summaryData"
@@ -393,7 +396,7 @@
                               {{ player.full_name }} &bull;
                               {{
                                 player.player_value === -1
-                                  ? 'Unranked'
+                                  ? 'N/A'
                                   : player.player_value.toLocaleString()
                               }}
                             </p>
@@ -414,7 +417,7 @@
                               {{ player.full_name }} &bull;
                               {{
                                 player.player_value === -1
-                                  ? 'Unranked'
+                                  ? 'N/A'
                                   : player.player_value.toLocaleString()
                               }}
                             </p>
@@ -435,7 +438,7 @@
                               {{ player.full_name }} &bull;
                               {{
                                 player.player_value === -1
-                                  ? 'Unranked'
+                                  ? 'N/A'
                                   : player.player_value.toLocaleString()
                               }}
                             </p>
@@ -455,7 +458,7 @@
                               {{ player.full_name }} &bull;
                               {{
                                 player.player_value === -1
-                                  ? 'Unranked'
+                                  ? 'N/A'
                                   : player.player_value.toLocaleString()
                               }}
                             </p>
@@ -502,14 +505,15 @@
                 v-model:value="value1"
                 style="width: 175px"
                 @focus="focus"
-                @change="handleChange"
+                @change="handleProjChange"
               >
                 <a-select-option value="espn">ESPN</a-select-option>
                 <a-select-option value="nfl">NFL</a-select-option>
                 <a-select-option value="cbs">CBS</a-select-option>
                 <a-select-option value="fc" disabled>FantasyCalc</a-select-option>
-              </a-select></a-space
-            >
+              </a-select>
+            </a-space>
+            <h2 style="text-align: center">League Projections</h2>
             <a-spin :spinning="isProjectionLoading">
               <div>
                 <!-- Check if the data is loading and display a loading indicator or empty state -->
@@ -544,7 +548,7 @@
                                   {{ player.full_name }}
                                   {{
                                     player.player_value === -1
-                                      ? 'Unranked'
+                                      ? 'N/A'
                                       : player.player_value.toLocaleString()
                                   }}
                                 </p>
@@ -565,7 +569,7 @@
                                   {{ player.full_name }}
                                   {{
                                     player.player_value === -1
-                                      ? 'Unranked'
+                                      ? 'N/A'
                                       : player.player_value.toLocaleString()
                                   }}
                                 </p>
@@ -586,7 +590,7 @@
                                   {{ player.full_name }}
                                   {{
                                     player.player_value === -1
-                                      ? 'Unranked'
+                                      ? 'N/A'
                                       : player.player_value.toLocaleString()
                                   }}
                                 </p>
@@ -603,7 +607,7 @@
                                   {{ player.full_name }}
                                   {{
                                     player.player_value === -1
-                                      ? 'Unranked'
+                                      ? 'N/A'
                                       : player.player_value.toLocaleString()
                                   }}
                                 </p>
@@ -620,6 +624,7 @@
             </a-spin>
           </TabPanel>
           <TabPanel header="Players">
+            <h2 style="text-align: left">Full League Rosters</h2>
             <a-row justify="space-around" :gutter="8">
               <a-col
                 v-for="manager in summaryData"
@@ -640,9 +645,7 @@
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{
-                        player.player_value === -1
-                          ? 'Unranked'
-                          : player.player_value.toLocaleString()
+                        player.player_value === -1 ? 'N/A' : player.player_value.toLocaleString()
                       }}
                     </div>
                     <div v-if="player.player_position === 'RB'">
@@ -651,9 +654,7 @@
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{
-                        player.player_value === -1
-                          ? 'Unranked'
-                          : player.player_value.toLocaleString()
+                        player.player_value === -1 ? 'N/A' : player.player_value.toLocaleString()
                       }}
                     </div>
                     <div v-if="player.player_position === 'WR'">
@@ -662,9 +663,7 @@
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{
-                        player.player_value === -1
-                          ? 'Unranked'
-                          : player.player_value.toLocaleString()
+                        player.player_value === -1 ? 'N/A' : player.player_value.toLocaleString()
                       }}
                     </div>
                     <div v-if="player.player_position === 'TE'">
@@ -673,9 +672,7 @@
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{
-                        player.player_value === -1
-                          ? 'Unranked'
-                          : player.player_value.toLocaleString()
+                        player.player_value === -1 ? 'N/A' : player.player_value.toLocaleString()
                       }}
                     </div>
                     <div v-if="player.player_position === 'PICKS'">
@@ -684,9 +681,7 @@
                       }}</a-tag>
                       {{ index + 1 }}. {{ player.full_name }} &bull;
                       {{
-                        player.player_value === -1
-                          ? 'Unranked'
-                          : player.player_value.toLocaleString()
+                        player.player_value === -1 ? 'N/A' : player.player_value.toLocaleString()
                       }}
                     </div>
                   </div>
@@ -695,6 +690,7 @@
             </a-row>
           </TabPanel>
           <TabPanel header="Manager View">
+            <h2 style="text-align: left">Team Dashboard</h2>
             <div v-for="manager in summaryData" :key="manager.user_id">
               <div v-if="manager.user_id === leagueInfo.userId">
                 <a-row :gutter="{ xs: 8, sm: 16, md: 24 }">
@@ -714,7 +710,7 @@
                             {{ index + 1 }}. {{ player.full_name }} &bull;
                             {{
                               player.player_value === -1
-                                ? 'Unranked'
+                                ? 'N/A'
                                 : player.player_value.toLocaleString()
                             }}
                           </div>
@@ -886,9 +882,7 @@
                     <p v-for="player in players" :key="player.sleeper_id">
                       {{ player.full_name }} &bull;
                       {{
-                        player.player_value === -1
-                          ? 'Unranked'
-                          : player.player_value?.toLocaleString()
+                        player.player_value === -1 ? 'N/A' : player.player_value?.toLocaleString()
                       }}
                     </p>
                   </a-card>
@@ -896,6 +890,86 @@
               </a-row>
             </div></TabPanel
           >
+          <TabPanel header="Trades (Beta)">
+            <h2 style="text-align: left">Trades Table</h2>
+
+            <a-spin :spinning="isTradesLoading">
+              <div class="table-section">
+                <a-table
+                  :columns="tradeColumns"
+                  :dataSource="tradesSummaryData"
+                  :pagination="{ pageSize: 20 }"
+                  row-key="display_name"
+                  :loading="isTradesLoading"
+                  :expand-column-width="100"
+                  style="max-width: 800px"
+                  :scroll="{ x: '800px' }"
+                >
+                </a-table>
+              </div>
+              <h2 style="text-align: center">Trade History</h2>
+
+              <a-divider />
+              <a-row
+                v-for="(managers, transaction_id) in tradesDetailData"
+                :key="transaction_id"
+                :gutter="24"
+                justify="center"
+              >
+                <a-col
+                  xs="24"
+                  sm="24"
+                  md="12"
+                  lg="8"
+                  v-for="(details, manager) in managers"
+                  :key="manager"
+                >
+                  <a-card style="width: 100%; max-width: 600px; margin: auto">
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding-bottom: 5px;
+                      "
+                    >
+                      <h3 style="margin: 0">{{ manager }}</h3>
+                      <span>
+                        <a-tag
+                          :color="
+                            details[0].owner_total -
+                              (details[0].deal_total - details[0].owner_total) <
+                            0
+                              ? 'red'
+                              : 'green'
+                          "
+                        >
+                          {{
+                            (
+                              details[0].owner_total -
+                              (details[0].deal_total - details[0].owner_total)
+                            ).toLocaleString()
+                          }} </a-tag
+                        >-
+                        <a-tag color="blue">{{ details[0].deal_total.toLocaleString() }}</a-tag>
+                      </span>
+                    </div>
+                    <a-list-item
+                      v-for="asset in details"
+                      :key="asset.asset"
+                      style="padding-bottom: 5px"
+                    >
+                      <a-avatar
+                        :src="`https://sleepercdn.com/content/nfl/players/thumb/${asset.sleeper_id}.jpg`"
+                      />
+                      {{ asset.asset }} &bull; {{ asset._position }}
+                      {{ asset.value.toLocaleString() }}
+                    </a-list-item>
+                  </a-card>
+                </a-col>
+                <a-divider />
+              </a-row> </a-spin
+          ></TabPanel>
         </TabView>
       </a-spin>
     </a-layout-content>
@@ -927,6 +1001,9 @@ import { getCellStyle } from '../utils/colorTable'
 
 const route = useRoute()
 
+const state = reactive({
+  checked1: true
+})
 const sfLogo = ref('src/assets/sourceLogos/sf.png')
 const ktcLogo = ref('src/assets/sourceLogos/ktc.png')
 const dpLogo = ref('src/assets/sourceLogos/dp.png')
@@ -938,11 +1015,14 @@ const handleButtonClick = (e: Event) => {
 const handleMenuClick: MenuProps['onClick'] = (e) => {
   console.log(e.key)
   const leagueId = leagueInfo.leagueId
+  const leagueYear = leagueInfo.leagueYear
   const platform = e.key
   try {
     fetchSummaryData(leagueId, platform, rankType, guid, rosterType)
     fetchDetailData(leagueId, platform, rankType, guid, rosterType)
     fetchBaData(leagueId, platform, rankType, guid, rosterType)
+    fetchTrades(leagueId, platform, rosterType, leagueYear)
+    leagueYear
   } catch {
     console.log('error loading leagues')
   } finally {
@@ -1001,8 +1081,9 @@ const summaryData = ref([])
 const detailData = ref([{}])
 const projDetailData = ref([{}])
 const projSummaryData = ref([{}])
+const tradesDetailData = ref([{}])
+const tradesSummaryData = ref([{}])
 const bestAvailableData = ref([{}])
-const singleManagerData = ref(null)
 
 const leaguesUrl = `/leagues/${leagueYear}/${userName}/${guid}`
 
@@ -1010,31 +1091,11 @@ const isLoading = ref(false)
 const summaryIsLoading = ref(false)
 const detailIsLoading = ref(false)
 const isProjectionLoading = ref(false)
+const isTradesLoading = ref(false)
 
-const selection = ref({})
 const apiSource = ref('sf')
 const value1 = ref('Choose Projection')
 const source = ref('SuperFlex')
-
-const options1 = ref<SelectProps['options']>([
-  {
-    value: 'espn',
-    label: 'Espn'
-  },
-  {
-    value: 'cbs',
-    label: 'CBS'
-  },
-  {
-    value: 'nfl',
-    label: 'NDL'
-  },
-  {
-    value: 'fc',
-    label: 'FantasyCalc',
-    disabled: true
-  }
-])
 
 const projChartData = ref({})
 
@@ -1049,7 +1110,8 @@ const projChartOptions = {
     }
   }
 }
-const handleChange = async (projectionSource: any) => {
+
+const handleProjChange = async (projectionSource: any) => {
   isProjectionLoading.value = true
   console.log(leagueId)
   console.log(projectionSource)
@@ -1179,8 +1241,7 @@ const starterColumns: Column[] = [
       style: getCellStyle(record.starters_rank)
     }),
     sorter: {
-      compare: (a, b) => a.starters_rank - b.starters_rank,
-      multiple: 2
+      compare: (a, b) => a.starters_rank - b.starters_rank
     }
   },
 
@@ -1195,8 +1256,7 @@ const starterColumns: Column[] = [
       style: getCellStyle(record.qb_starter_rank)
     }),
     sorter: {
-      compare: (a, b) => a.qb_starter_rank - b.qb_starter_rank,
-      multiple: 1
+      compare: (a, b) => a.qb_starter_rank - b.qb_starter_rank
     }
   },
   {
@@ -1210,8 +1270,7 @@ const starterColumns: Column[] = [
       style: getCellStyle(record.rb_starter_rank)
     }),
     sorter: {
-      compare: (a, b) => a.rb_starter_rank - b.rb_starter_rank,
-      multiple: 1
+      compare: (a, b) => a.rb_starter_rank - b.rb_starter_rank
     }
   },
   {
@@ -1225,8 +1284,7 @@ const starterColumns: Column[] = [
       style: getCellStyle(record.wr_starter_rank)
     }),
     sorter: {
-      compare: (a, b) => a.wr_starter_rank - b.wr_starter_rank,
-      multiple: 1
+      compare: (a, b) => a.wr_starter_rank - b.wr_starter_rank
     }
   },
   {
@@ -1240,8 +1298,47 @@ const starterColumns: Column[] = [
       style: getCellStyle(record.te_starter_rank)
     }),
     sorter: {
-      compare: (a, b) => a.te_starter_rank - b.te_starter_rank,
-      multiple: 1
+      compare: (a, b) => a.te_starter_rank - b.te_starter_rank
+    }
+  }
+]
+const tradeColumns: Column[] = [
+  {
+    title: '',
+    dataIndex: 'display_name',
+    key: 'display_name'
+  },
+  {
+    title: 'Trades Cnt',
+    dataIndex: 'trades_cnt',
+    key: 'trades_cnt',
+    align: 'center',
+    sorter: {
+      compare: (a, b) => a.trades_cnt - b.trades_cnt
+    }
+  },
+  {
+    title: 'Added',
+    dataIndex: 'total_add',
+    key: 'total_add',
+    sorter: {
+      compare: (a, b) => a.total_add - b.total_add
+    }
+  },
+  {
+    title: 'Lost',
+    dataIndex: 'total_drop',
+    key: 'total_drop',
+    sorter: {
+      compare: (a, b) => a.total_drop - b.total_drop
+    }
+  },
+  {
+    title: 'Net',
+    dataIndex: 'total_diff',
+    key: 'total_diff',
+    sorter: {
+      compare: (a, b) => a.total_diff - b.total_diff
     }
   }
 ]
@@ -1272,8 +1369,7 @@ const columns: Column[] = [
       style: getCellStyle(record.total_rank)
     }),
     sorter: {
-      compare: (a, b) => a.total_rank - b.total_rank,
-      multiple: 10
+      compare: (a, b) => a.total_rank - b.total_rank
     }
   },
   {
@@ -1286,8 +1382,7 @@ const columns: Column[] = [
       style: getCellStyle(record.qb_rank)
     }),
     sorter: {
-      compare: (a, b) => a.qb_rank - b.qb_rank,
-      multiple: 4
+      compare: (a, b) => a.qb_rank - b.qb_rank
     }
   },
   {
@@ -1300,8 +1395,7 @@ const columns: Column[] = [
       style: getCellStyle(record.rb_rank)
     }),
     sorter: {
-      compare: (a, b) => a.rb_rank - b.rb_rank,
-      multiple: 5
+      compare: (a, b) => a.rb_rank - b.rb_rank
     }
   },
   {
@@ -1314,8 +1408,7 @@ const columns: Column[] = [
       style: getCellStyle(record.wr_rank)
     }),
     sorter: {
-      compare: (a, b) => a.wr_rank - b.wr_rank,
-      multiple: 6
+      compare: (a, b) => a.wr_rank - b.wr_rank
     }
   },
   {
@@ -1328,8 +1421,7 @@ const columns: Column[] = [
       style: getCellStyle(record.te_rank)
     }),
     sorter: {
-      compare: (a, b) => a.te_rank - b.te_rank,
-      multiple: 7
+      compare: (a, b) => a.te_rank - b.te_rank
     }
   },
   {
@@ -1342,8 +1434,7 @@ const columns: Column[] = [
       style: getCellStyle(record.picks_rank)
     }),
     sorter: {
-      compare: (a, b) => a.picks_rank - b.picks_rank,
-      multiple: 8
+      compare: (a, b) => a.picks_rank - b.picks_rank
     }
   },
   {
@@ -1356,8 +1447,7 @@ const columns: Column[] = [
       style: getCellStyle(record.bench_rank)
     }),
     sorter: {
-      compare: (a, b) => a.bench_rank - b.bench_rank,
-      multiple: 3
+      compare: (a, b) => a.bench_rank - b.bench_rank
     }
   }
   // Add more columns as needed
@@ -1382,8 +1472,7 @@ const projColumns: Column[] = [
       style: getCellStyle(record.total_rank)
     }),
     sorter: {
-      compare: (a, b) => a.total_rank - b.total_rank,
-      multiple: 10
+      compare: (a, b) => a.total_rank - b.total_rank
     }
   },
   {
@@ -1396,8 +1485,7 @@ const projColumns: Column[] = [
       style: getCellStyle(record.qb_rank)
     }),
     sorter: {
-      compare: (a, b) => a.qb_rank - b.qb_rank,
-      multiple: 4
+      compare: (a, b) => a.qb_rank - b.qb_rank
     }
   },
   {
@@ -1410,8 +1498,7 @@ const projColumns: Column[] = [
       style: getCellStyle(record.rb_rank)
     }),
     sorter: {
-      compare: (a, b) => a.rb_rank - b.rb_rank,
-      multiple: 5
+      compare: (a, b) => a.rb_rank - b.rb_rank
     }
   },
   {
@@ -1424,8 +1511,7 @@ const projColumns: Column[] = [
       style: getCellStyle(record.wr_rank)
     }),
     sorter: {
-      compare: (a, b) => a.wr_rank - b.wr_rank,
-      multiple: 6
+      compare: (a, b) => a.wr_rank - b.wr_rank
     }
   },
   {
@@ -1438,8 +1524,7 @@ const projColumns: Column[] = [
       style: getCellStyle(record.te_rank)
     }),
     sorter: {
-      compare: (a, b) => a.te_rank - b.te_rank,
-      multiple: 7
+      compare: (a, b) => a.te_rank - b.te_rank
     }
   }
   // Add more columns as needed
@@ -1447,6 +1532,7 @@ const projColumns: Column[] = [
 
 onMounted(() => {
   const leagueId = route.params.leagueId as string
+  const leagueYear = route.params.leagueYear as string
   const platform = route.params.platform as string
   const rankType = route.params.rankType as string
   const guid = route.params.guid as string
@@ -1456,6 +1542,7 @@ onMounted(() => {
     fetchSummaryData(leagueId, platform, rankType, guid, rosterType)
     fetchDetailData(leagueId, platform, rankType, guid, rosterType)
     fetchBaData(leagueId, platform, rankType, guid, rosterType)
+    fetchTrades(leagueId, platform, rosterType, leagueYear)
   }
 })
 
@@ -1575,6 +1662,7 @@ const insertLeagueDetials = async (values: any) => {
       leagueInfo.guid,
       leagueInfo.rosterType
     )
+    fetchTrades(leagueInfo.leagueId, apiSource.value, leagueInfo.rosterType, leagueInfo.leagueYear)
   }
 }
 async function fetchSummaryData(
@@ -1655,6 +1743,50 @@ async function fetchBaData(
     message.error('Failed to fetch best available data.')
   } finally {
     // detailIsLoading.value = false
+  }
+}
+
+async function fetchTrades(
+  leagueId: string,
+  platform: string,
+  rosterType: string,
+  leagueYear: string
+) {
+  // detailIsLoading.value = true
+  try {
+    console.log('Pulling trades')
+    const [summaryResponse, detailResponse] = await Promise.all([
+      axios.get('http://127.0.0.1:8000/trades_summary', {
+        params: {
+          league_id: leagueId,
+          platform: platform,
+          roster_type: rosterType,
+          league_year: leagueYear
+        }
+      }),
+      axios.get('http://127.0.0.1:8000/trades_detail', {
+        params: {
+          league_id: leagueId,
+          platform: platform,
+          roster_type: rosterType,
+          league_year: leagueYear
+        }
+      })
+    ])
+
+    console.log('Trades API: summaryResponse response:', summaryResponse.data)
+    console.log('Trades API: detail Response response:', detailResponse.data)
+
+    const sDetailData = summaryResponse.data
+    const tDetailData = detailResponse.data
+
+    tradesSummaryData.value = sDetailData
+    tradesDetailData.value = tDetailData
+  } catch (error) {
+    console.log(error)
+    console.log('There was an error...')
+  } finally {
+    console.log('finally complete')
   }
 }
 
@@ -1746,13 +1878,15 @@ const chartOptions = computed(() => {
         callbacks: {
           label: (context) => {
             const dataPoint = context.raw
-            return `${dataPoint.label}: ${dataPoint.y}`
+            return `${dataPoint.label} Age:${dataPoint.x} Value:${dataPoint.y}`
           }
         }
       }
     },
     scales: {
       x: {
+        min: 20,
+        max: 40,
         ticks: {
           font: {
             size: 10 // Smaller font size for x-axis ticks
@@ -1760,6 +1894,8 @@ const chartOptions = computed(() => {
         }
       },
       y: {
+        min: 0,
+        max: 9999,
         ticks: {
           font: {
             size: 10 // Smaller font size for y-axis ticks
@@ -1994,5 +2130,15 @@ table {
   height: 20px;
   vertical-align: middle;
   border-radius: 3px;
+}
+.avatar-traded-asset {
+  width: 38px;
+  height: 32px;
+  flex: 0 0 38px;
+  /* float: left; */
+  /* background: center center / cover rgb(239, 239, 239); */
+  border-radius: 50%;
+  background-color: transparent;
+  border: 2px solid rgb(39, 125, 161);
 }
 </style>

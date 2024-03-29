@@ -2,7 +2,7 @@
   <a-layout class="layout">
     <AppHeader />
 
-    <a-layout-content style="padding: 0 50px">
+    <a-layout-content style="padding: 0 100px">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
       </a-breadcrumb>

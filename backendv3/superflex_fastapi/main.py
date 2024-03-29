@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from db import get_db
 from superflex_models import UserDataModel, LeagueDataModel, RosterDataModel
 from pathlib import Path
-
+from datetime import datetime
 # UTILS
 from utils import (get_user_id, insert_current_leagues,
                    insert_league, player_manager_rosters)
@@ -54,12 +54,12 @@ def leagues(league_year: str, user_name: str, guid: str, db: str = Depends(get_d
     session_id = guid
 
     cursor_.execute(
-        f"""select ROW_NUMBER() OVER() as key, session_id, cl.user_name,cl.user_id, cl.league_id, league_name, avatar, total_rosters, qb_cnt, CASE WHEN sf_cnt > 0 THEN 'Superflex' else 'Single QB' end as roster_type, starter_cnt, total_roster_cnt, sport, insert_date, rf_cnt, case when league_cat = 0 THEN 'Redraft' when league_cat = 1 THEN 'Keeper' else 'Dynasty' end as league_type, league_year, rs.ktc_power_rank, rs.sf_power_rank, rs.fc_power_rank, rs.dp_power_rank, rs.espn_contender_rank, rs.nfl_contender_rank, rs.fp_contender_rank, rs.fc_contender_rank, rs.cbs_contender_rank 
-    from dynastr.current_leagues cl 
-    left join dynastr.ranks_summary rs on cl.league_id = rs.league_id and cl.user_id = rs.user_id  
+        f"""select ROW_NUMBER() OVER() as key, session_id, cl.user_name,cl.user_id, cl.league_id, league_name, avatar, total_rosters, qb_cnt, CASE WHEN sf_cnt > 0 THEN 'Superflex' else 'Single QB' end as roster_type, starter_cnt, total_roster_cnt, sport, insert_date, rf_cnt, case when league_cat = 0 THEN 'Redraft' when league_cat = 1 THEN 'Keeper' else 'Dynasty' end as league_type, league_year, rs.ktc_power_rank, rs.sf_power_rank, rs.fc_power_rank, rs.dp_power_rank, rs.espn_contender_rank, rs.nfl_contender_rank, rs.fp_contender_rank, rs.fc_contender_rank, rs.cbs_contender_rank
+    from dynastr.current_leagues cl
+    left join dynastr.ranks_summary rs on cl.league_id = rs.league_id and cl.user_id = rs.user_id
     where 1=1
-    and session_id = '{session_id}' 
-    and cl.user_id ='{user_id}' 
+    and session_id = '{session_id}'
+    and cl.user_id ='{user_id}'
     and league_year = '{league_year}'"""
     )
     db_resp_obj = cursor_.fetchall()
@@ -141,7 +141,7 @@ def league_detail(league_id: str, platform: str, rank_type: str, guid: str, rost
     if platform == 'sf':
 
         league_pos_col = (
-            "sf_position_rank" if league_type == "sf_value" else "superflex_one_qb_pos_rank"
+            "superflex_sf_pos_rank" if league_type == "sf_value" else "superflex_one_qb_pos_rank"
         )
 
         league_type = (
@@ -168,6 +168,83 @@ def league_detail(league_id: str, platform: str, rank_type: str, guid: str, rost
             .replace("league_pos_col", f"{league_pos_col}")
         )
     cursor_.execute(power_detail_sql)
+    db_resp_obj = cursor_.fetchall()
+    cursor_.close()
+
+    return db_resp_obj
+
+
+@app.get("/trades_detail")
+def trades_detail(league_id: str, platform: str, roster_type: str, league_year: str, db: str = Depends(get_db)):
+
+    cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
+    league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+
+    if platform == 'sf':
+
+        league_type = (
+            "superflex_sf_value"
+            if roster_type == "sf_value"
+            else "superflex_one_qb_value"
+        )
+
+    with open(Path.cwd() / "sql" / "details" / "trades" / f"{platform}.sql", "r",) as trades_file:
+        trades_sql = (
+            trades_file.read()
+            .replace("'current_year'", f"'{league_year}'")
+            .replace("'league_id'", f"'{league_id}'")
+            .replace("league_type", f"{league_type}")
+        )
+    cursor_.execute(trades_sql)
+    trades = cursor_.fetchall()
+
+    transaction_ids = list(
+        set([(i["transaction_id"], i["status_updated"]) for i in trades])
+    )
+    transaction_ids = sorted(
+        transaction_ids,
+        key=lambda x: datetime.fromtimestamp(int(str(x[-1])[:10])),
+        reverse=True,
+    )
+    managers_list = list(
+        set([(i["display_name"], i["transaction_id"]) for i in trades])
+    )
+    trades_dict = {}
+    for transaction_id in transaction_ids:
+        trades_dict[transaction_id[0]] = {
+            i[0]: [p for p in trades if p["display_name"]
+                   == i[0] and p["transaction_id"] == transaction_id[0]]
+            for i in managers_list
+            if i[1] == transaction_id[0]
+        }
+
+    cursor_.close()
+
+    return trades_dict
+
+
+@app.get("/trades_summary")
+def trades_summary(league_id: str, platform: str, roster_type: str, league_year: str, db: str = Depends(get_db)):
+
+    cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
+    league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+
+    if platform == 'sf':
+
+        league_type = (
+            "superflex_sf_value"
+            if roster_type == "sf_value"
+            else "superflex_one_qb_value"
+        )
+
+    with open(Path.cwd() / "sql" / "summary" / "trades" / f"{platform}.sql", "r",) as trades_file:
+        trades_sql = (
+            trades_file.read()
+            .replace("'current_year'", f"'{league_year}'")
+            .replace("'league_id'", f"'{league_id}'")
+            .replace("league_type", f"{league_type}")
+        )
+    cursor_.execute(trades_sql)
     db_resp_obj = cursor_.fetchall()
     cursor_.close()
 
