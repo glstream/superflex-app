@@ -64,29 +64,16 @@
           </h2>
         </div>
         <div class="controls-container">
-          <a-dropdown-button @click="handleButtonClick" class="dropdown-button">
-            {{ source }}
+          <a-dropdown-button :loading="summaryIsLoading">
+            <img style="padding-right: 5px" class="dropdown-img" :src="selectedSource.logo" />
+            {{ selectedSource.name }}
             <template #overlay>
               <a-menu @click="handleMenuClick">
-                <a-menu-item key="sf">
+                <a-menu-item v-for="source in sources" :key="source.key">
                   <UserOutlined />
-                  <img style="padding-right: 5px" class="dropdown-img" :src="sfLogo" />SuperFlex
-                </a-menu-item>
-                <a-menu-item key="ktc">
-                  <UserOutlined />
-                  <img style="padding-right: 5px" class="dropdown-img" :src="ktcLogo" />KeepTradeCut
-                </a-menu-item>
-                <a-menu-item key="dp">
-                  <UserOutlined />
-                  <img
-                    style="padding-right: 5px"
-                    class="dropdown-img"
-                    :src="dpLogo"
-                  />DynastyProcess
-                </a-menu-item>
-                <a-menu-item key="fc">
-                  <UserOutlined />
-                  <img style="padding-right: 5px" class="dropdown-img" :src="fcLogo" />FantasyCalc
+                  <img style="padding-right: 5px" class="dropdown-img" :src="source.logo" />{{
+                    source.name
+                  }}
                 </a-menu-item>
               </a-menu>
             </template>
@@ -894,7 +881,7 @@
             <h2 style="text-align: left">Trades Table</h2>
 
             <a-spin :spinning="isTradesLoading">
-              <div class="table-section">
+              <div>
                 <a-table
                   :columns="tradeColumns"
                   :dataSource="tradesSummaryData"
@@ -999,55 +986,20 @@ import 'primeicons/primeicons.css'
 import { addOrdinalSuffix } from '../utils/suffix'
 import { getCellStyle } from '../utils/colorTable'
 
+// Sourec image imports
+import sfLogo from '@/assets/sourceLogos/sf.png'
+import ktcLogo from '@/assets/sourceLogos/ktc.png'
+import dpLogo from '@/assets/sourceLogos/dp.png'
+import fcLogo from '@/assets/sourceLogos/fc.png'
+
 const route = useRoute()
 
 const state = reactive({
   checked1: true
 })
-const sfLogo = ref('src/assets/sourceLogos/sf.png')
-const ktcLogo = ref('src/assets/sourceLogos/ktc.png')
-const dpLogo = ref('src/assets/sourceLogos/dp.png')
-const fcLogo = ref('src/assets/sourceLogos/fc.png')
 
 const handleButtonClick = (e: Event) => {
   console.log('click left button', e)
-}
-const handleMenuClick: MenuProps['onClick'] = (e) => {
-  console.log(e.key)
-  const leagueId = leagueInfo.leagueId
-  const leagueYear = leagueInfo.leagueYear
-  const platform = e.key
-  try {
-    fetchSummaryData(leagueId, platform, rankType, guid, rosterType)
-    fetchDetailData(leagueId, platform, rankType, guid, rosterType)
-    fetchBaData(leagueId, platform, rankType, guid, rosterType)
-    fetchTrades(leagueId, platform, rosterType, leagueYear)
-    leagueYear
-  } catch {
-    console.log('error loading leagues')
-  } finally {
-    switch (e.key) {
-      case 'sf':
-        source.value = 'SuperFlex'
-        apiSource.value = 'sf'
-        break
-      case 'dp':
-        source.value = 'DynastyProcess'
-        apiSource.value = 'dp'
-        break
-      case 'ktc':
-        source.value = 'KeepTradeCut'
-        apiSource.value = 'ktc'
-        break
-      case 'fc':
-        source.value = 'FantasyCalc'
-        apiSource.value = 'fc'
-        break
-      default:
-        source.value = 'sf'
-        apiSource.value = 'sf'
-    }
-  }
 }
 
 const leagueName = route.params.leagueName
@@ -1095,7 +1047,31 @@ const isTradesLoading = ref(false)
 
 const apiSource = ref('sf')
 const value1 = ref('Choose Projection')
+const sources = [
+  { key: 'sf', name: 'SuperFlex', logo: sfLogo },
+  { key: 'ktc', name: 'KeepTradeCut', logo: ktcLogo },
+  { key: 'dp', name: 'DynastyProcess', logo: dpLogo },
+  { key: 'fc', name: 'FantasyCalc', logo: fcLogo }
+]
 const source = ref('SuperFlex')
+const selectedSource = ref(sources[0])
+
+const handleMenuClick: MenuProps['onClick'] = (e) => {
+  const leagueId = leagueInfo.leagueId
+  const leagueYear = leagueInfo.leagueYear
+  const platform = e.key
+  try {
+    fetchSummaryData(leagueId, platform, rankType, guid, rosterType)
+    fetchDetailData(leagueId, platform, rankType, guid, rosterType)
+    fetchBaData(leagueId, platform, rankType, guid, rosterType)
+    fetchTrades(leagueId, platform, rosterType, leagueYear)
+    selectedSource.value = sources.find((source) => source.key === platform) || sources[0]
+  } catch {
+    console.log('error loading leagues')
+  } finally {
+    console.log('league ranks pull complete')
+  }
+}
 
 const projChartData = ref({})
 
@@ -1221,6 +1197,10 @@ function formatGaugeData(record) {
       value: record.picks_percent
     }
   ]
+}
+
+const getLogoPath = (path) => {
+  return require('@/assets/sourceLogos/' + path)
 }
 
 const starterColumns: Column[] = [
@@ -2080,11 +2060,6 @@ table {
 .controls-container {
   display: flex;
   gap: 10px;
-}
-
-.dropdown-button,
-.load-league-button {
-  /* Button styles */
 }
 
 @media (max-width: 768px) {

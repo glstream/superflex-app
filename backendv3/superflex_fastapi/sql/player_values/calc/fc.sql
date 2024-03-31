@@ -30,8 +30,8 @@ select player_full_name
 ,CONCAT(_position, ' ', rank() OVER (partition by _rank_type, _position ORDER BY value DESC)) as pos_rank
 , team
 , age
-, value
-, row_number() OVER (partition by _rank_type order by value desc) as rank
+, value as player_value
+, row_number() OVER (partition by _rank_type order by value desc) as player_rank
 , _position
 , _rank_type
 , TO_DATE(insert_date, 'YYYY-mm-DDTH:M:SS.z')-1 as _insert_date

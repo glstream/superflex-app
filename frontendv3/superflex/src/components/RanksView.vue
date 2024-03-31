@@ -8,32 +8,21 @@
       </a-breadcrumb>
       <h1>{{ source }} Rankings</h1>
       <div style="padding-bottom: 25px">
-        <a-dropdown-button @click="handleButtonClick" class="dropdown-button">
-          {{ source }}
+        <a-dropdown-button :loading="isLoading">
+          <img style="padding-right: 5px" class="dropdown-img" :src="selectedSource.logo" />
+          {{ selectedSource.name }}
           <template #overlay>
             <a-menu @click="handleMenuClick">
-              <a-menu-item key="sf">
+              <a-menu-item v-for="source in sources" :key="source.key">
                 <UserOutlined />
-                <img style="padding-right: 5px" class="dropdown-img" :src="sfLogo" />SuperFlex
-              </a-menu-item>
-              <a-menu-item key="ktc">
-                <UserOutlined />
-                <img style="padding-right: 5px" class="dropdown-img" :src="ktcLogo" />KeepTradeCut
-              </a-menu-item>
-              <a-menu-item key="dp">
-                <UserOutlined />
-                <img style="padding-right: 5px" class="dropdown-img" :src="dpLogo" />
-                DynastyProcess
-              </a-menu-item>
-              <a-menu-item key="fc">
-                <UserOutlined />
-                <img style="padding-right: 5px" class="dropdown-img" :src="fcLogo" />
-                FantasyCalc
+                <img style="padding-right: 5px" class="dropdown-img" :src="source.logo" />{{
+                  source.name
+                }}
               </a-menu-item>
             </a-menu>
           </template>
         </a-dropdown-button>
-        <div style="float: right">
+        <div>
           <a-switch
             size="large"
             v-model:checked="state.checked1"
@@ -79,11 +68,14 @@ import 'ant-design-vue/dist/reset.css'
 const platform = ref('sf')
 const ranksData = ref([{}])
 const isLoading = ref(false)
-const source = ref('SuperFlex')
-const sfLogo = ref('src/assets/sourceLogos/sf.png')
-const ktcLogo = ref('src/assets/sourceLogos/ktc.png')
-const dpLogo = ref('src/assets/sourceLogos/dp.png')
-const fcLogo = ref('src/assets/sourceLogos/fc.png')
+
+const sources = [
+  { key: 'sf', name: 'SuperFlex', logo: 'src/assets/sourceLogos/sf.png' },
+  { key: 'ktc', name: 'KeepTradeCut', logo: 'src/assets/sourceLogos/ktc.png' },
+  { key: 'dp', name: 'DynastyProcess', logo: 'src/assets/sourceLogos/dp.png' },
+  { key: 'fc', name: 'FantasyCalc', logo: 'src/assets/sourceLogos/fc.png' }
+]
+const selectedSource = ref(sources[0])
 
 const state = reactive({
   checked1: true
@@ -98,8 +90,8 @@ interface Column {
 const playerColumns: Column[] = [
   {
     title: 'Rank',
-    dataIndex: 'rank',
-    key: 'rank',
+    dataIndex: 'player_rank',
+    key: 'player_rank',
     width: 100,
     sorter: {
       compare: (a, b) => a.rank - b.rank,
@@ -142,8 +134,8 @@ const playerColumns: Column[] = [
   },
   {
     title: 'Value',
-    dataIndex: 'value',
-    key: 'value',
+    dataIndex: 'player_value',
+    key: 'player_value',
     width: 100
   }
 ]
@@ -152,30 +144,22 @@ onMounted(() => {
   fetchRanks(platform.value)
 })
 
+const filteredData = computed(() => {
+  return ranksData.value.filter((item) => {
+    return state.checked1 ? item._rank_type === 'sf_value' : item._rank_type === 'one_qb_value'
+  })
+})
+
 const handleMenuClick: MenuProps['onClick'] = (e) => {
   console.log(e.key)
   const platform = e.key
   try {
     fetchRanks(platform)
+    selectedSource.value = sources.find((source) => source.key === platform) || sources[0]
   } catch {
     console.log('error loading leagues')
   } finally {
-    switch (e.key) {
-      case 'sf':
-        source.value = 'SuperFlex'
-        break
-      case 'dp':
-        source.value = 'DynastyProcess'
-        break
-      case 'ktc':
-        source.value = 'KeepTradeCut'
-        break
-      case 'fc':
-        source.value = 'FantasyCalc'
-        break
-      default:
-        source.value = 'sf'
-    }
+    console.log('league ranks pull complete')
   }
 }
 function getPositionTag(position) {

@@ -28,8 +28,8 @@ select player_full_name
 ,CONCAT(_position, ' ', rank() OVER (partition by _rank_type, _position ORDER BY value DESC)) as pos_rank
 , team
 , age
-, value
-, rank
+, value as player_value
+, rank as player_rank
 , row_number() OVER (order by value desc) as _rownum
 , _position
 , case when _rank_type = 'superflex_sf_value' then 'sf_value' 

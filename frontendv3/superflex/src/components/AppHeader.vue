@@ -9,7 +9,8 @@
       <a-menu-item key="4"
         ><router-link to="/tradecalculator">Trade Calculator</router-link></a-menu-item
       >
-      <a-menu-item key="5"><router-link to="/about">About</router-link></a-menu-item>
+      <a-menu-item key="5"><router-link to="/analyitcs">Analytics</router-link></a-menu-item>
+      <a-menu-item key="c"><router-link to="/about">About</router-link></a-menu-item>
       <!-- Add more menu items as needed -->
     </a-menu>
   </a-layout-header>

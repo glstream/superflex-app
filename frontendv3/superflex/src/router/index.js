@@ -30,6 +30,10 @@ const router = createRouter({
       component: () => import('../components/TradeCalculatorView.vue')
     },
     {
+      path: '/analyitcs',
+      component: () => import('../components/AnalyticsView.vue')
+    },
+    {
       path: '/about',
       component: () => import('../components/AboutView.vue')
     }
