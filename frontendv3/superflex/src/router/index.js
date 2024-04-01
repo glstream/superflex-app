@@ -9,9 +9,9 @@ const router = createRouter({
       component: () => import('../components/LeaguesApp.vue')
     },
     {
-      path: '/userName',
-      name: 'EnterUsername',
-      component: () => import('../components/EnterUsername.vue')
+      path: '/username',
+      name: 'UsernameView',
+      component: () => import('../components/UsernameView.vue')
     },
     {
       path: '/leagueview/:userName/:userId/:leagueId/:leagueName/:leagueSetting/:leagueYear/:leagueStarters/:leagueSize/:leagueType/:guid/:rosterType/:avatar',

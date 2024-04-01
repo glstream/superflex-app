@@ -2,6 +2,8 @@ import './assets/main.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersist from 'pinia-plugin-persist'
+
 import Antd from 'ant-design-vue'
 // import 'ant-design-vue/dist/reset.css'
 import 'primevue/resources/themes/aura-light-green/theme.css'
@@ -16,7 +18,10 @@ import router from './router'
 
 const app = createApp(App)
 
-app.use(createPinia())
+const pinia = createPinia()
+pinia.use(piniaPluginPersist)
+
+app.use(pinia)
 app.use(router)
 app.use(Antd)
 app.use(PrimeVue)

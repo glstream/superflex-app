@@ -7,7 +7,22 @@
         <a-breadcrumb-item>Ranks</a-breadcrumb-item>
       </a-breadcrumb>
       <h1>{{ source }} Rankings</h1>
-      <div style="padding-bottom: 25px">
+      <div
+        style="
+          padding-bottom: 25px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <div>
+          <a-switch
+            size="large"
+            v-model:checked="state.checked1"
+            checked-children="Superflex"
+            un-checked-children="OneQB"
+          />
+        </div>
         <a-dropdown-button :loading="isLoading">
           <img style="padding-right: 5px" class="dropdown-img" :src="selectedSource.logo" />
           {{ selectedSource.name }}
@@ -22,14 +37,6 @@
             </a-menu>
           </template>
         </a-dropdown-button>
-        <div>
-          <a-switch
-            size="large"
-            v-model:checked="state.checked1"
-            checked-children="Superflex"
-            un-checked-children="OneQB"
-          />
-        </div>
       </div>
 
       <a-table

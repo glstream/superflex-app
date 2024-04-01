@@ -6,9 +6,9 @@
         <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
         <a-breadcrumb-item>Trade Calculator</a-breadcrumb-item>
       </a-breadcrumb>
-      <div class="trade-calculator">
-        <a-row align="middle" justify="space-between">
-          <a-col :span="8">
+      <div class="trade-calculator" style="background: #f5f5f5">
+        <a-row align="middle" justify="space-around">
+          <a-col :span="16">
             <a-switch
               size="large"
               v-model:checked="state.checked1"
@@ -118,14 +118,14 @@
                 </a-badge-ribbon>
               </div>
               <div class="total-assets-container">
-                <div class="total-pieces">{{ selectedPlayers2.length }} Total Assets</div>
+                <div class="total-value">{{ selectedPlayers2.length }} Total Assets</div>
                 <div class="total-value">Total Value: {{ totalValue2.toLocaleString() }}</div>
               </div>
             </a-card>
           </a-col>
         </a-row>
         <div class="trade-comparison" style="padding-top: 10px">
-          <a-row type="flex" justify="center">
+          <a-row type="flex" justify="center" style="padding-bottom: 10px">
             <a-col :span="12">
               <div
                 v-if="selectedPlayers1.length > 0 || selectedPlayers2.length > 0"
@@ -133,7 +133,7 @@
                   'status-message': true,
                   'fair-trade': isFairTrade,
                   'favored-trade': isFavoredTrade,
-                  'a-favored-trade': isAfovored
+                  'a-favored-trade': isAfavored
                 }"
               >
                 <ArrowLeftOutlined v-if="bFavoredTrade" class="arrow-icon" />
@@ -144,8 +144,8 @@
           </a-row>
           <a-collapse :bordered="false" style="background: rgb(255, 255, 255)"
             ><a-collapse-panel key="1" header="Options" :style="customStyle">
-              <a-row type="flex" justify="center">
-                <a-col :span="4">
+              <a-row type="flex" justify="left">
+                <a-col :span="8">
                   <div class="slider-label">Acceptable Variance</div>
                   <a-slider max="50" v-model:value="percentThreshold" class="flex-item slider" />
                   <span> {{ percentThreshold }}%</span>
@@ -758,16 +758,10 @@ function getPositionColor(position: string): string {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Example hover effect */
 }
 
-.total-assets-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 16px; /* Adjust as needed */
-}
-
 .total-value {
+  margin-top: 24px;
+  text-align: center;
   font-weight: bold;
-  /* Additional styling as needed */
 }
 .search-bar-container {
   /* Other styles for the search bar container might already be here */
@@ -785,7 +779,7 @@ function getPositionColor(position: string): string {
 
 .slider-label {
   text-align: center; /* Centers the label text */
-  margin-bottom: 8px; /* Space between the label and the slider */
+  margin-bottom: 10px; /* Space between the label and the slider */
   font-weight: bold; /* Makes the label text bold */
 }
 .nearest-players {
@@ -821,8 +815,10 @@ function getPositionColor(position: string): string {
   border: 1px solid #f94144;
 }
 
-.bold-value {
-  color: #000; /* Black color */
-  font-weight: bold; /* Bold font weight */
+.total-assets-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* This will vertically align them if they have different heights */
+  padding: 0.5em 0; /* Add some padding if needed */
 }
 </style>

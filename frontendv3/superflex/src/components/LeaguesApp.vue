@@ -28,7 +28,7 @@
                   :color="
                     record.league_type === 'Dynasty'
                       ? 'cyan'
-                      : recrod.league_type === 'Redraft'
+                      : record.league_type === 'Redraft'
                         ? 'green'
                         : 'red'
                   "

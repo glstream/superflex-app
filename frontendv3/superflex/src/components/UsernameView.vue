@@ -60,7 +60,14 @@ import axios from 'axios'
 
 // Custom Utils
 import { useGuid } from '../utils/guid'
+import { useUserStore } from '@/stores/userStore'
 
+const userStore = useUserStore()
+// Example function that would be called when a user submits their details
+function updateUserDetails(year, name, guid) {
+  userStore.setUserDetails(year, name, guid)
+}
+const store = useUserStore()
 const router = useRouter()
 
 interface FormState {
@@ -79,6 +86,7 @@ const onFinish = async (values: any) => {
     const userGuid = getOrCreateGUID()
 
     console.log('User GUID:', userGuid)
+
     // Make a POST request to your backend server
     await axios.post('http://127.0.0.1:8000/user_details', {
       league_year: formState.leagueYear,
@@ -87,6 +95,8 @@ const onFinish = async (values: any) => {
     })
     console.log('Username submission successful')
     console.log(formState.userName)
+
+    store.setUserDetails(formState.leagueYear, formState.userName, userGuid)
 
     // Redirect to the /leagues endpoint
     router.push(`/leagues/${formState.leagueYear}/${formState.userName}/${userGuid}`)
