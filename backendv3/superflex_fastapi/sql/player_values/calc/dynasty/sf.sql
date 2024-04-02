@@ -21,5 +21,6 @@ LEFT JOIN dynastr.players p ON sf.player_full_name = p.full_name
 WHERE
   sf.player_full_name NOT LIKE '%2023%'
   AND (sf.superflex_sf_value > 0 OR sf.superflex_one_qb_value > 0)
+  and rank_type = 'dynasty'
 ORDER BY
   sf.superflex_sf_value DESC;

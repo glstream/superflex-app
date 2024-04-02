@@ -92,6 +92,7 @@ from
                                     inner join dynastr.sf_player_ranks sf on a1.player_name = sf.player_full_name
                                     inner join dynastr.managers m on cast(a1.user_id as varchar) = cast(m.user_id as varchar)
                                     where 1=1 
+                                    and sf.rank_type = 'rank_type'
                                     
                                     order by status_updated desc
                                     ) t1                              

@@ -21,6 +21,7 @@ and pl.player_id NOT IN (SELECT
             )
 and pl.player_position IN ('QB', 'RB', 'WR', 'TE' )
 and pl.team is not null
+and ktc.rank_type = 'rank_type'
 order by player_value desc) ba_t1
 where ba_t1.rn <= 7
 order by ba_t1.player_position, ba_t1.player_value desc

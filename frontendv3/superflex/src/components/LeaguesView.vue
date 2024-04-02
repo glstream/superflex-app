@@ -201,7 +201,6 @@ async function fetchData(leagueYear: string, userName: string, guid: string) {
     isLoading.value = false
   }
 }
-
 const getLeagueDetail = async (record) => {
   try {
     const leagueId = record.league_id
@@ -209,12 +208,16 @@ const getLeagueDetail = async (record) => {
     const leagueYear = record.league_year
     const userName = record.user_name
     const leagueName = record.league_name
-    const rosterType = record.roster_type
     const userId = record.user_id
     const avatar = record.avatar
+    const rankType = record.league_type
+    const rosterType = record.roster_type
+
+    // Determine the path segment based on rankType
+    const platform = rankType !== 'Dynasty' ? 'ktc' : 'sf'
 
     router.push(
-      `/league/${leagueId}/sf/power/${guid}/${leagueYear}/${userName}/${leagueName}/${rosterType}/${userId}/${avatar}`
+      `/league/${leagueId}/${platform}/${rankType}/${guid}/${leagueYear}/${userName}/${leagueName}/${rosterType}/${userId}/${avatar}/`
     )
 
     console.log('Sending to League details')
@@ -236,8 +239,9 @@ const getLeagueSummary = (record) => {
   const rosterType = record.roster_type
   const userId = record.user_id
   const avatar = record.avatar
+  const rankType = record.league_type
 
-  const url = `/leagueview/${userName}/${userId}/${leagueId}/${leagueName}/${rosterType}/${leagueYear}/${record.starter_cnt}/${record.total_rosters}/${record.league_type}/${guid}/${rosterType}/${avatar}`
+  const url = `/leaguesummary/${userName}/${userId}/${leagueId}/${leagueName}/${rosterType}/${leagueYear}/${record.starter_cnt}/${record.total_rosters}/${record.league_type}/${guid}/${rosterType}/${avatar}/${rankType}`
 
   router.push(url)
 }
@@ -247,22 +251,6 @@ const getLeagueSummary = (record) => {
 .layout {
   min-height: 100vh;
   min-width: 1000px;
-}
-
-.site-layout-content {
-  min-height: 280px;
-  padding: 24px;
-  background: #fff;
-}
-.rank-name {
-  flex: 1; /* Allows this element to grow and shrink as needed */
-  min-width: 0; /* Prevents the element from overflowing */
-  white-space: nowrap; /* Prevents text from wrapping */
-}
-
-.rank-tags {
-  display: flex;
-  gap: 8px; /* Adjust the space between tags */
 }
 .table-section {
   display: flex;

@@ -1,7 +1,7 @@
 <template>
   <a-layout class="layout">
     <AppHeader />
-    <a-layout-content style="padding: 0 100px">
+    <a-layout-content class="responsive-padding">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/userName">Home</a></a-breadcrumb-item>
         <a-breadcrumb-item>Ranks</a-breadcrumb-item>
@@ -15,20 +15,36 @@
           align-items: center;
         "
       >
-        <div>
-          <a-switch
-            size="large"
-            v-model:checked="state.checked1"
-            checked-children="Superflex"
-            un-checked-children="OneQB"
-          />
+        <div class="switch-container">
+          <a-card>
+            <h3 style="margin-bottom: 5px">Settings</h3>
+            <div class="setting-item">
+              <a-switch
+                id="switch1"
+                size="large"
+                v-model:checked="state.checked1"
+                checked-children="Superflex"
+                un-checked-children="OneQB"
+              />
+            </div>
+            <div class="setting-item">
+              <a-switch
+                id="switch2"
+                size="large"
+                v-model:checked="state.checked2"
+                checked-children="Dynasty"
+                un-checked-children="Redraft"
+              />
+            </div>
+          </a-card>
         </div>
+
         <a-dropdown-button :loading="isLoading">
           <img style="padding-right: 5px" class="dropdown-img" :src="selectedSource.logo" />
           {{ selectedSource.name }}
           <template #overlay>
             <a-menu @click="handleMenuClick">
-              <a-menu-item v-for="source in sources" :key="source.key">
+              <a-menu-item v-for="source in filteredSources" :key="source.key">
                 <UserOutlined />
                 <img style="padding-right: 5px" class="dropdown-img" :src="source.logo" />{{
                   source.name
@@ -61,7 +77,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 
 import AppHeader from '@/components/AppHeader.vue'
@@ -75,6 +91,7 @@ import 'ant-design-vue/dist/reset.css'
 const platform = ref('sf')
 const ranksData = ref([{}])
 const isLoading = ref(false)
+const rankType = ref('dynasty')
 
 const sources = [
   { key: 'sf', name: 'SuperFlex', logo: 'src/assets/sourceLogos/sf.png' },
@@ -84,8 +101,18 @@ const sources = [
 ]
 const selectedSource = ref(sources[0])
 
+const filteredSources = computed(() => {
+  if (rankType.value !== 'dynasty') {
+    return sources.filter(
+      (source) => source.key === 'fc' || source.key === 'ktc' || source.key === 'sf'
+    )
+  }
+  return sources
+})
+
 const state = reactive({
-  checked1: true
+  checked1: true,
+  checked2: true
 })
 
 interface Column {
@@ -151,9 +178,19 @@ onMounted(() => {
   fetchRanks(platform.value)
 })
 
+watchEffect(() => {
+  rankType.value = state.checked2 ? 'dynasty' : 'redraft'
+})
+
 const filteredData = computed(() => {
   return ranksData.value.filter((item) => {
-    return state.checked1 ? item._rank_type === 'sf_value' : item._rank_type === 'one_qb_value'
+    const rankTypeCondition = state.checked2
+      ? item.rank_type === 'dynasty'
+      : item.rank_type === 'redraft'
+    const rosterTypeCondition = state.checked1
+      ? item.roster_type === 'sf_value'
+      : item.roster_type === 'one_qb_value'
+    return rankTypeCondition && rosterTypeCondition
   })
 })
 
@@ -208,6 +245,7 @@ function getPositionTag(position) {
 
 async function fetchRanks(platform: string) {
   isLoading.value = true
+
   try {
     const response = await axios.get('http://127.0.0.1:8000/ranks', {
       params: {
@@ -235,5 +273,22 @@ async function fetchRanks(platform: string) {
   height: 20px;
   vertical-align: middle;
   border-radius: 3px;
+}
+.switch-container .setting-item {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: right;
+  justify-content: space-between;
+}
+/* This is the base style, for mobile screens */
+.responsive-padding {
+  padding: 0 16px; /* Small padding for small screens */
+}
+
+/* Media query for screens wider than 768px */
+@media (min-width: 768px) {
+  .responsive-padding {
+    padding: 0 300px; /* Larger padding for larger screens */
+  }
 }
 </style>

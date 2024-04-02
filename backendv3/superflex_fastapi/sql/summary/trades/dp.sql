@@ -39,12 +39,12 @@ from
                                     , pt.transaction_type
                                     , p.full_name as asset
                                     , p.full_name
-                                    , coalesce(ktc.league_type, 0) as value
+                                    , coalesce(dpr.league_type, 0) as value
                                     , m.display_name
                                     , p.player_id
                                     from dynastr.player_trades pt
                                     inner join dynastr.players p on pt.player_id = p.player_id
-                                    left join dynastr.ktc_player_ranks ktc on concat(p.first_name, p.last_name) = concat(ktc.player_first_name, ktc.player_last_name)
+                                    left join dynastr.dp_player_ranks dpr on concat(p.first_name, p.last_name) = concat(dpr.player_first_name, dpr.player_last_name)
                                     inner join dynastr.draft_positions dp on pt.roster_id = dp.roster_id and dp.league_id = pt.league_id
                                     inner join dynastr.managers m on cast(dp.user_id as varchar) = cast(m.user_id as varchar)
                                     where 1=1
@@ -60,7 +60,7 @@ from
                                     , a1.transaction_type
                                     , a1.asset
                                     , a1.player_name
-                                    , ktc.league_type as value
+                                    , dpr.league_type as value
                                     , m.display_name
                                     , null as player_id
                                             from 
@@ -89,10 +89,10 @@ from
                                                 where 1=1
                                                 and dpt.league_id = 'league_id' 
                                                 )  a1
-                                    inner join dynastr.ktc_player_ranks ktc on a1.player_name = ktc.player_full_name
+                                    inner join dynastr.dp_player_ranks dpr on a1.player_name = dpr.player_full_name
                                     inner join dynastr.managers m on cast(a1.user_id as varchar) = cast(m.user_id as varchar)
                                     where 1=1 
-                                    and ktc.rank_type = 'rank_type'
+
                                     order by status_updated desc
                                     ) t1                              
                                     order by 

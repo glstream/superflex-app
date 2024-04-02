@@ -34,7 +34,7 @@ SELECT *
                                     where 1=1
                                     and pt.league_id = 'league_id' 
                                     and transaction_type = 'add'
-                                    
+                                    and sf.rank_type = 'rank_type'
                                     UNION ALL
                                     
                                     select a1.league_id

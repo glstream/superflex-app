@@ -22,7 +22,9 @@ WITH base_players as (SELECT
                     INNER JOIN dynastr.current_leagues cl on lp.league_id = cl.league_id and cl.session_id = 'session_id' 
                     WHERE lp.session_id = 'session_id'
                     and lp.league_id = 'league_id'
-                    and pl.player_position IN ('QB', 'RB', 'WR', 'TE' ))
+                    and pl.player_position IN ('QB', 'RB', 'WR', 'TE' )
+                    and sf.rank_type = 'rank_type'
+                    )
 
                     , base_picks as (SELECT t1.user_id
                                 , t1.season
@@ -53,6 +55,7 @@ WITH base_players as (SELECT
                                     INNER JOIN dynastr.draft_positions dname on  dname.roster_id = al.roster_id and al.league_id = dname.league_id
                                 ) t1
                                 LEFT JOIN dynastr.sf_player_ranks sf on t1.player_full_name = sf.player_full_name
+                                where sf.rank_type = 'rank_type'
                                     )						   
                     , starters as (SELECT  
                     qb.user_id
@@ -236,4 +239,6 @@ WITH base_players as (SELECT
                     left join dynastr.players p on tp.player_id = p.player_id
                     LEFT JOIN dynastr.sf_player_ranks sf on tp.ktc_player_id = sf.ktc_player_id
                     inner join dynastr.managers m on tp.user_id = m.user_id 
+                    where 1=1
+                    and sf.rank_type = 'rank_type'
                     order by player_value desc

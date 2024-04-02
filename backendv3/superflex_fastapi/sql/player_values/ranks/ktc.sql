@@ -6,7 +6,8 @@ with ktc_players as (select player_full_name
 , CASE WHEN substring(lower(player_full_name) from 6 for 5) = 'round' THEN 'Pick' 
 	   	WHEN position = 'RDP' THEN 'Pick'
 		ELSE position END as _position
-, 'sf_value' as _rank_type 
+, 'sf_value' as roster_type 
+, rank_type
 ,insert_date
 from dynastr.ktc_player_ranks 
 UNION ALL
@@ -18,7 +19,8 @@ select player_full_name
 , CASE WHEN substring(lower(player_full_name) from 6 for 5) = 'round' THEN 'Pick' 
 	   	WHEN position = 'RDP' THEN 'Pick'
 		ELSE position END as _position
-, 'one_qb_value' as _rank_type
+, 'one_qb_value' as roster_type
+, rank_type
 ,insert_date
 from dynastr.ktc_player_ranks )
 															   
@@ -30,7 +32,8 @@ select player_full_name
 , rank as player_rank
 , row_number() OVER (order by value desc) as _rownum
 , _position
-, _rank_type
+, roster_type
+, rank_type
 , TO_DATE(insert_date, 'YYYY-mm-DDTH:M:SS.z')-1 as _insert_date
 from ktc_players
 where 1=1

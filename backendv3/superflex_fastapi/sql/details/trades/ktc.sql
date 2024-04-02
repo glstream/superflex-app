@@ -36,6 +36,7 @@ SELECT *
                                     and pt.league_id = 'league_id' 
                                     and transaction_type = 'add'
                                     --and pt.transaction_id = '832101872931274752'
+                                    and ktc.rank_type = 'rank_type'
                                     
                                     UNION ALL
                                     

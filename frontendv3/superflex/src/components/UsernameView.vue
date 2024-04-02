@@ -2,53 +2,72 @@
   <a-layout class="layout">
     <AppHeader />
 
-    <a-layout-content style="padding: 0 100px">
+    <a-layout-content class="responsive-padding">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
       </a-breadcrumb>
-      <div class="form-container">
-        <a-form
-          :model="formState"
-          name="basic"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
-          autocomplete="off"
-          @finish="onFinish"
-          @finishFailed="onFinishFailed"
-          class="form-style"
-        >
-          <a-form-item
-            label="Username"
-            name="userName"
-            :rules="[{ required: true, message: 'Please input your userName!' }]"
-          >
-            <a-input v-model:value="formState.userName" />
-          </a-form-item>
-          <!-- League Year Dropdown -->
-          <a-form-item
-            label="League Year:"
-            name="leagueYear"
-            :rules="[{ required: true, message: 'Please select a league year!' }]"
-          >
-            <a-select v-model:value="formState.leagueYear" placeholder="Select a year">
-              <a-select-option value="2023">2023</a-select-option>
-              <a-select-option value="2022">2022</a-select-option>
-              <a-select-option value="2021">2021</a-select-option>
-              <!-- Add more years as needed -->
-            </a-select>
-          </a-form-item>
+      <div class="header">
+        <img :src="logo" alt="Fantasy Affect Logo" class="logo" />
+      </div>
 
-          <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
-            <a-button type="primary" html-type="submit">Submit</a-button>
-          </a-form-item>
-        </a-form>
+      <div class="form-container">
+        <a-card hoverable style="width: 300px">
+          <template #cover>
+            <img
+              alt="example"
+              :src="landingPage"
+              style="width: 100%; height: 300px; object-fit: cover; object-position: center"
+            />
+          </template>
+          <a-form
+            :model="formState"
+            name="basic"
+            autocomplete="off"
+            @finish="onFinish"
+            @finishFailed="onFinishFailed"
+            layout="vertical"
+          >
+            <a-form-item
+              label=""
+              name="userName"
+              :rules="[{ required: true, message: 'Please input your userName!' }]"
+            >
+              <div style="display: flex; align-items: center; gap: 1px">
+                <a-input v-model:value="formState.userName" placeholder="Sleeper Username">
+                  <template #prefix><UserOutlined style="color: rgba(0, 0, 0, 0.25)" /></template>
+                  <a-button type="primary" @click="showModal">Open Modal</a-button>
+                </a-input>
+                <a-button type="text" @click="showModal"><InfoCircleOutlined /></a-button>
+                <a-modal v-model:open="open" @ok="handleOk">
+                  <p>Superflex is currently only avilable for sleeper leagues.</p>
+                </a-modal>
+              </div>
+            </a-form-item>
+            <a-form-item
+              label=""
+              name="leagueYear"
+              :rules="[{ required: true, message: 'Please select a league year' }]"
+            >
+              <a-select v-model:value="formState.leagueYear" placeholder="Select a year">
+                <a-select-option value="2023">2023</a-select-option>
+                <a-select-option value="2022">2022</a-select-option>
+                <a-select-option value="2021">2021</a-select-option>
+                <!-- Add more years as needed -->
+              </a-select>
+            </a-form-item>
+
+            <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
+              <a-button type="primary" html-type="submit">Submit</a-button>
+            </a-form-item>
+          </a-form>
+        </a-card>
       </div>
     </a-layout-content>
     <AppFooter />
   </a-layout>
 </template>
 <script lang="ts" setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 // Site tags
@@ -57,10 +76,25 @@ import AppFooter from '@/components/AppFooter.vue'
 
 // 3rd Part Utils
 import axios from 'axios'
+import { UserOutlined, LockOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
 
 // Custom Utils
 import { useGuid } from '../utils/guid'
 import { useUserStore } from '@/stores/userStore'
+
+import landingPage from '@/assets/landing.webp'
+import logo from '@/assets/logo.png'
+
+const open = ref<boolean>(false)
+
+const showModal = () => {
+  open.value = true
+}
+
+const handleOk = (e: MouseEvent) => {
+  console.log(e)
+  open.value = false
+}
 
 const userStore = useUserStore()
 // Example function that would be called when a user submits their details
@@ -115,20 +149,41 @@ const onFinishFailed = (errorInfo: any) => {
 /* Basic styling */
 .layout {
   min-height: 100vh;
-  min-width: 1000px;
 }
 .form-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 65vh; /* Make it full height of the viewport */
 }
 
 .form-style {
   width: 100%;
   max-width: 400px; /* Adjust based on your preference */
   padding: 25px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds some shadow for better visuals */
-  background-color: white; /* Ensure the form background is white */
+  background-color: white;
+  border-radius: 15px;
+}
+.logo {
+  max-width: 100%; /* Ensures the image is responsive */
+  height: auto; /* Maintains aspect ratio */
+  max-height: 100px;
+}
+.header {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  width: 100%; /* Take the full width */
+  padding-bottom: 10px;
+}
+/* This is the base style, for mobile screens */
+.responsive-padding {
+  padding: 0 16px; /* Small padding for small screens */
+}
+
+/* Media query for screens wider than 768px */
+@media (min-width: 768px) {
+  .responsive-padding {
+    padding: 0 100px; /* Larger padding for larger screens */
+  }
 }
 </style>

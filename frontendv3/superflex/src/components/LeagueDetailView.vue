@@ -61,17 +61,18 @@
 
             <a-tag color="cyan" size="large" style="margin-left: 15px">{{ source }}</a-tag>
             <a-tag style="margin-left: 15px">{{ leagueInfo.rosterType }}</a-tag>
+            <a-tag style="margin-left: 15px">{{ leagueInfo.rankType }}</a-tag>
           </h2>
         </div>
         <div class="controls-container">
           <a-dropdown-button :loading="summaryIsLoading">
-            <img style="padding-right: 5px" class="dropdown-img" :src="selectedSource.logo" />
+            <img style="padding-right: 5px" class="rank-logos" :src="selectedSource.logo" />
             {{ selectedSource.name }}
             <template #overlay>
               <a-menu @click="handleMenuClick">
-                <a-menu-item v-for="source in sources" :key="source.key">
+                <a-menu-item v-for="source in filteredSources" :key="source.key">
                   <UserOutlined />
-                  <img style="padding-right: 5px" class="dropdown-img" :src="source.logo" />{{
+                  <img style="padding-right: 5px" class="rank-logos" :src="source.logo" />{{
                     source.name
                   }}
                 </a-menu-item>
@@ -1012,6 +1013,8 @@ const rankType = route.params.rankType
 const userId = route.params.userId
 const rosterType = route.params.rosterType
 const avatar = route.params.avatar
+const leagueType = route.params.leagueType
+const apiSource = route.params.platform
 
 const simpleImage = Empty.PRESENTED_IMAGE_SIMPLE
 
@@ -1026,7 +1029,9 @@ const leagueInfo = reactive({
   platform: platform as string,
   userId: userId as string,
   rosterType: rosterType as string,
-  avatar: avatar as string
+  avatar: avatar as string,
+  leagueType: leagueType as string,
+  apiSource: apiSource as string
 })
 
 const summaryData = ref([])
@@ -1045,7 +1050,6 @@ const detailIsLoading = ref(false)
 const isProjectionLoading = ref(false)
 const isTradesLoading = ref(false)
 
-const apiSource = ref('sf')
 const value1 = ref('Choose Projection')
 const sources = [
   { key: 'sf', name: 'SuperFlex', logo: sfLogo },
@@ -1056,6 +1060,15 @@ const sources = [
 const source = ref('SuperFlex')
 const selectedSource = ref(sources[0])
 
+const filteredSources = computed(() => {
+  if (leagueInfo.rankType !== 'Dynasty') {
+    return sources.filter(
+      (source) => source.key === 'fc' || source.key === 'ktc' || source.key === 'sf'
+    )
+  }
+  return sources
+})
+
 const handleMenuClick: MenuProps['onClick'] = (e) => {
   const leagueId = leagueInfo.leagueId
   const leagueYear = leagueInfo.leagueYear
@@ -1064,7 +1077,7 @@ const handleMenuClick: MenuProps['onClick'] = (e) => {
     fetchSummaryData(leagueId, platform, rankType, guid, rosterType)
     fetchDetailData(leagueId, platform, rankType, guid, rosterType)
     fetchBaData(leagueId, platform, rankType, guid, rosterType)
-    fetchTrades(leagueId, platform, rosterType, leagueYear)
+    fetchTrades(leagueId, platform, rosterType, leagueYear, rankType)
     selectedSource.value = sources.find((source) => source.key === platform) || sources[0]
   } catch {
     console.log('error loading leagues')
@@ -1522,7 +1535,7 @@ onMounted(() => {
     fetchSummaryData(leagueId, platform, rankType, guid, rosterType)
     fetchDetailData(leagueId, platform, rankType, guid, rosterType)
     fetchBaData(leagueId, platform, rankType, guid, rosterType)
-    fetchTrades(leagueId, platform, rosterType, leagueYear)
+    fetchTrades(leagueId, platform, rosterType, leagueYear, rankType)
   }
 })
 
@@ -1623,26 +1636,32 @@ const insertLeagueDetials = async (values: any) => {
 
     fetchSummaryData(
       leagueInfo.leagueId,
-      apiSource.value,
+      leagueInfo.apiSource,
       leagueInfo.rankType,
       leagueInfo.guid,
       leagueInfo.rosterType
     )
     fetchDetailData(
       leagueInfo.leagueId,
-      apiSource.value,
+      leagueInfo.leagueNameapiSource,
       leagueInfo.rankType,
       leagueInfo.guid,
       leagueInfo.rosterType
     )
     fetchBaData(
       leagueInfo.leagueId,
-      apiSource.value,
+      leagueInfo.apiSource,
       leagueInfo.rankType,
       leagueInfo.guid,
       leagueInfo.rosterType
     )
-    fetchTrades(leagueInfo.leagueId, apiSource.value, leagueInfo.rosterType, leagueInfo.leagueYear)
+    fetchTrades(
+      leagueInfo.leagueId,
+      leagueInfo.apiSource,
+      leagueInfo.rosterType,
+      leagueInfo.leagueYear,
+      leagueInfo.rankType
+    )
   }
 }
 async function fetchSummaryData(
@@ -1660,7 +1679,8 @@ async function fetchSummaryData(
         platform: platform,
         rank_type: rankType,
         guid: guid,
-        roster_type: rosterType
+        roster_type: rosterType,
+        league_type: leagueType
       }
     })
 
@@ -1730,7 +1750,8 @@ async function fetchTrades(
   leagueId: string,
   platform: string,
   rosterType: string,
-  leagueYear: string
+  leagueYear: string,
+  rankType: string
 ) {
   // detailIsLoading.value = true
   try {
@@ -1741,7 +1762,8 @@ async function fetchTrades(
           league_id: leagueId,
           platform: platform,
           roster_type: rosterType,
-          league_year: leagueYear
+          league_year: leagueYear,
+          rank_type: rankType
         }
       }),
       axios.get('http://127.0.0.1:8000/trades_detail', {
@@ -1749,7 +1771,8 @@ async function fetchTrades(
           league_id: leagueId,
           platform: platform,
           roster_type: rosterType,
-          league_year: leagueYear
+          league_year: leagueYear,
+          rank_type: rankType
         }
       })
     ])
@@ -1908,6 +1931,8 @@ async function fetchDetailData(
   rosterType: string
 ) {
   detailIsLoading.value = true
+  // empty detail data
+  detailData.value = []
   try {
     const response = await axios.get(`http://127.0.0.1:8000/league_detail`, {
       params: {
@@ -2100,7 +2125,7 @@ table {
   flex-wrap: wrap; /* Allows children to wrap to next line as needed */
   text-align: center; /* Ensures text is centered if it wraps */
 }
-.dropdown-img {
+.rank-logos {
   width: 24px;
   height: 20px;
   vertical-align: middle;
@@ -2115,5 +2140,9 @@ table {
   border-radius: 50%;
   background-color: transparent;
   border: 2px solid rgb(39, 125, 161);
+}
+
+.load-league-button {
+  max-width: 150px; /* Set your desired maximum width */
 }
 </style>

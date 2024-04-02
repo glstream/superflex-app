@@ -1,7 +1,7 @@
 <template>
   <a-layout class="layout">
     <AppHeader />
-    <a-layout-content class="main-content" style="padding: 0 100px; flex-grow: 1">
+    <a-layout-content class="responsive-padding">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
         <a-breadcrumb-item><a :href="leaguesUrl">Leagues</a></a-breadcrumb-item>
@@ -30,9 +30,10 @@
             <a-tag>{{ leagueInfo.leagueSize }} Team</a-tag>
             <a-tag>{{ leagueInfo.leagueSetting }}</a-tag>
             <a-tag>{{ leagueInfo.leagueStarters }} Starters</a-tag>
+            <a-tag>{{ leagueInfo.rankType }} Starters</a-tag>
           </a-card>
 
-          <a-card style="margin-bottom: 25px" title="Dynasty Rankings" bordered>
+          <a-card style="margin-bottom: 25px" title="Power Rankings" bordered>
             <a-tabs
               v-model:activeKey="activeKey"
               @change="fetchTabData"
@@ -199,7 +200,7 @@
               ></a-tab-pane>
             </a-tabs>
           </a-card>
-          <a-card title="Contender Rankings" bordered>
+          <a-card title="Projections" bordered>
             <a-tabs
               v-model:conActiveKey="conActiveKey"
               @change="contenderFetchTabData"
@@ -287,47 +288,7 @@
                     <a-empty />
                   </div> </a-spin
               ></a-tab-pane>
-              <a-tab-pane key="7" tab="FantasyCalc" force-render>
-                <a-spin :spinning="contenderIsLoading">
-                  <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
-                    <div
-                      class="tag-group"
-                      v-for="conRankInfo in contenderPositionalRanks"
-                      :key="conRankInfo.conPosition"
-                    >
-                      <a-tooltip :title="addOrdinalSuffix(conRankInfo.conRank)" placement="top">
-                        <a-tag
-                          :color="conRankInfo.conColor"
-                          :title="conRankInfo.conRank"
-                          class="custom-position-tag"
-                          >{{ conRankInfo.conPosition }}</a-tag
-                        >
-                      </a-tooltip>
-                      <div class="tag-badges">
-                        <!-- Render green tags if any -->
-                        <a-tag
-                          v-for="n in conRankInfo.conGreenTags"
-                          :key="`${conRankInfo.conPosition}-green-${n}`"
-                          :class="getColorByRank(conRankInfo.conRank)"
-                          >&nbsp;</a-tag
-                        >
-                        <!-- Then render grey tags -->
-                        <a-tag
-                          v-for="n in conRankInfo.conGreyTags"
-                          :key="`${conRankInfo.conPosition}-grey-${n}`"
-                          class="grey-tag"
-                          >&nbsp;</a-tag
-                        ><a-tag class="summary-badge">{{
-                          addOrdinalSuffix(conRankInfo.conRank)
-                        }}</a-tag>
-                      </div>
-                    </div>
-                  </div>
-                  <div v-else style="text-align: center">
-                    <a-empty />
-                  </div> </a-spin
-              ></a-tab-pane>
-              <a-tab-pane key="9" tab="CBS" force-render>
+              <a-tab-pane key="8" tab="CBS" force-render>
                 <a-spin :spinning="contenderIsLoading">
                   <div class="tags-container" v-if="contenderPositionalRanks.length > 0">
                     <div
@@ -416,6 +377,8 @@ const leagueSize = route.params.leagueSize
 const guid = route.params.guid
 const rosterType = route.params.rosterType
 const avatar = route.params.avatar
+const rankType = route.params.rankType
+
 const leaguesUrl = `/leagues/${leagueYear}/${userName}/${guid}`
 
 const tabsMetadata = {
@@ -433,12 +396,13 @@ const tabsMetadata = {
 onMounted(() => {
   const platform = 'ktc'
   const contenderPlatform = 'espn'
-  const rankType = 'power'
   const contenderRankType = 'contender'
   const leagueId = route.params.leagueId as string
   const avatar = route.params.avatar as string
   const guid = route.params.guid as string
   const rosterType = route.params.rosterType as string
+  const rankType = route.params.rankType as string
+
   if (leagueId && platform && rankType && guid) {
     fetchLeagueData(leagueId, platform, rankType, guid, rosterType)
     contenderFetchLeagueData(leagueId, contenderPlatform, contenderRankType, guid, rosterType)
@@ -457,7 +421,8 @@ const leagueInfo = reactive({
   leagueYear: leagueYear,
   leagueStarters: leagueStarters,
   guid: guid as string,
-  rosterType: rosterType
+  rosterType: rosterType,
+  rankType: rankType as string
 })
 
 const goBack = () => {
@@ -848,8 +813,15 @@ function getColorByRank(rank) {
   min-width: 45px;
   display: inline-flex;
 }
-.main-content {
-  max-width: 950px; /* Set your desired max width */
-  padding: 0 50px; /* Keep your existing padding if needed */
+
+.responsive-padding {
+  padding: 0 5px; /* Small padding for small screens */
+}
+
+/* Media query for screens wider than 768px */
+@media (min-width: 768px) {
+  .responsive-padding {
+    padding: 0 400px; /* Larger padding for larger screens */
+  }
 }
 </style>

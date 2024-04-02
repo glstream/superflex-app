@@ -1,28 +1,37 @@
 <template>
   <a-layout class="layout">
     <AppHeader />
-    <a-layout-content style="padding: 0 100px">
+    <a-layout-content class="responsive-padding">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item><a href="/username">Home</a></a-breadcrumb-item>
         <a-breadcrumb-item>Trade Calculator</a-breadcrumb-item>
       </a-breadcrumb>
       <div class="trade-calculator" style="background: #f5f5f5">
-        <a-row align="middle" justify="space-around">
-          <a-col :span="16">
-            <a-switch
-              size="large"
-              v-model:checked="state.checked1"
-              checked-children="Superflex"
-              un-checked-children="OneQB"
-            />
+        <a-row align="left" justify="space-between">
+          <a-col flex="300px">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <a-switch
+                size="large"
+                v-model:checked="state.checked1"
+                checked-children="Superflex"
+                un-checked-children="OneQB"
+              />
+              <div>
+                <a-radio-group v-model:value="rankType" button-style="solid">
+                  <a-radio-button value="dynasty">Dynasty</a-radio-button>
+                  <a-radio-button value="redraft">Redraft</a-radio-button>
+                </a-radio-group>
+              </div>
+            </div>
           </a-col>
-          <a-col :span="4" :offset="4" style="padding-bottom: 8px">
+
+          <a-col :flex="auto" style="padding-bottom: 8px">
             <a-dropdown-button :loading="isLoading" options="">
               <img style="padding-right: 5px" class="dropdown-img" :src="selectedSource.logo" />
               {{ selectedSource.name }}
               <template #overlay>
                 <a-menu @click="handleMenuClick">
-                  <a-menu-item v-for="source in sources" :key="source.key">
+                  <a-menu-item v-for="source in filteredSources" :key="source.key">
                     <UserOutlined />
                     <img style="padding-right: 5px" class="dropdown-img" :src="source.logo" />{{
                       source.name
@@ -34,7 +43,7 @@
           </a-col>
         </a-row>
         <a-row :gutter="16" class="teams">
-          <a-col :span="12">
+          <a-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
             <a-card>
               <h3>Team A gets...</h3>
               <div class="search-bar-container">
@@ -79,7 +88,7 @@
               </div>
             </a-card>
           </a-col>
-          <a-col :span="12">
+          <a-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
             <a-card>
               <h3>Team B gets...</h3>
               <div class="search-bar-container">
@@ -229,7 +238,7 @@ const isLoading = ref(false)
 const ranksData = ref([{}])
 
 const platform = ref('sf')
-const hover = ref(null) // Reactive property to track hover state
+const rankType = ref('dynasty')
 
 const sources = [
   { key: 'sf', name: 'SuperFlex', logo: 'src/assets/sourceLogos/sf.png' },
@@ -238,6 +247,16 @@ const sources = [
   { key: 'fc', name: 'FantasyCalc', logo: 'src/assets/sourceLogos/fc.png' }
 ]
 const selectedSource = ref(sources[0])
+
+const filteredSources = computed(() => {
+  if (rankType.value !== 'dynasty') {
+    return sources.filter(
+      (source) => source.key === 'fc' || source.key === 'ktc' || source.key === 'sf'
+    )
+  }
+  return sources
+})
+
 interface TeamA {
   value: string
 }
@@ -245,16 +264,10 @@ interface TeamB {
   age: string
 }
 
-const autocompleteOptions = computed(() => {
-  return ranksData.value.map((item) => ({
-    value: item.value, // Use the 'value' property for both value and label
-    label: item.value // This assumes you want to display the same text as the item's value
-  }))
-})
-
 const totalValue1 = computed(() => {
   return selectedPlayers1.value.reduce((sum, player) => {
-    return sum + (state.checked1 ? player.sf_value : player.one_qb_value)
+    const valueKey = state.checked1 ? 'sf_value' : 'one_qb_value'
+    return sum + (player[valueKey] || 0)
   }, 0)
 })
 
@@ -319,9 +332,6 @@ const selectPlayer2 = (playerName: string) => {
   }
   value2.value = '' // Optionally clear the search box after selection
 }
-
-watch(value1, () => {})
-watch(value2, () => {})
 
 const removePlayer1 = (index) => {
   selectedPlayers1.value.splice(index, 1) // Remove the player at the specified index
@@ -627,30 +637,57 @@ const tradeFairnessType = computed(() => {
 })
 
 const state = reactive({
-  checked1: true
+  checked1: true,
+  checked2: true
 })
 
-async function fetchRanks(platform: string) {
+async function fetchRanks(platform: string, rankType: string) {
   isLoading.value = true
   ranksData.value = []
+
   try {
-    const response = await axios.get('http://127.0.0.1:8000/trade_calculator', {
+    const response = await axios.get(`http://127.0.0.1:8000/trade_calculator/`, {
       params: {
-        platform
+        platform: platform,
+        rank_type: rankType
       }
     })
     console.log('Pulling Player Values...')
     ranksData.value = response.data
     console.log(ranksData.value)
   } catch (error) {
-    console.log('There was an error pulling values...')
+    console.log('There was an error pulling values...', error)
   } finally {
     isLoading.value = false
   }
 }
 
 onMounted(() => {
-  fetchRanks(platform.value)
+  fetchRanks(platform.value, rankType.value)
+})
+
+// Watch the rankType and fetch ranks whenever it changes
+watch(rankType, (newRankType) => {
+  fetchRanks(platform.value, newRankType)
+})
+
+watch(ranksData, () => {
+  selectedPlayers1.value = selectedPlayers1.value.map((selectedPlayer) => {
+    // Find the updated player data in the fetched ranks
+    const updatedPlayer = ranksData.value.find(
+      (player) => player.player_full_name === selectedPlayer.player_full_name
+    )
+    return updatedPlayer || selectedPlayer
+  })
+})
+
+watch(ranksData, () => {
+  selectedPlayers2.value = selectedPlayers2.value.map((selectedPlayer) => {
+    const updatedPlayer = ranksData.value.find(
+      (player) => player.player_full_name === selectedPlayer.player_full_name
+    )
+    return updatedPlayer || selectedPlayer // Return the updated player or the original if not found
+  })
 })
 
 const handleMenuClick: MenuProps['onClick'] = (e) => {
@@ -659,7 +696,7 @@ const handleMenuClick: MenuProps['onClick'] = (e) => {
   try {
     clearCalculator()
     clearCalcMemory()
-    fetchRanks(platform)
+    fetchRanks(platform, rankType.value) // Ensure fetchRanks is awaited if it's asynchronous
     selectedSource.value = sources.find((source) => source.key === platform) || sources[0]
   } catch {
     console.log('error loading leagues')
@@ -820,5 +857,17 @@ function getPositionColor(position: string): string {
   justify-content: space-between;
   align-items: center; /* This will vertically align them if they have different heights */
   padding: 0.5em 0; /* Add some padding if needed */
+}
+
+/* This is the base style, for mobile screens */
+.responsive-padding {
+  padding: 0 5px; /* Small padding for small screens */
+}
+
+/* Media query for screens wider than 768px */
+@media (min-width: 768px) {
+  .responsive-padding {
+    padding: 0 300px; /* Larger padding for larger screens */
+  }
 }
 </style>

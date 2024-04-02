@@ -87,10 +87,10 @@ def ranks(platform: str, db: str = Depends(get_db)):
 
 
 @app.get('/trade_calculator')
-def ranks(platform: str, db: str = Depends(get_db)):
+def trade_calculator(platform: str, rank_type: str, db: str = Depends(get_db)):
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
 
-    with open(Path.cwd() / "sql" / "player_values" / "calc" / f"{platform}.sql", "r",) as player_values_file:
+    with open(Path.cwd() / "sql" / "player_values" / "calc" / f"{rank_type}" / f"{platform}.sql", "r",) as player_values_file:
         player_values_sql = player_values_file.read()
 
     cursor_.execute(player_values_sql)
@@ -107,6 +107,12 @@ def league(league_id: str, platform: str, rank_type: str, guid: str, roster_type
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
     session_id = guid
     league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+    rank_type = 'dynasty' if rank_type.lower() == 'dynasty' else 'redraft'
+
+    if platform in ['espn', 'cbs', 'nfl']:
+        rank_source = 'contender'
+    else:
+        rank_source = 'power'
 
     if platform == 'sf':
         league_pos_col = (
@@ -119,6 +125,7 @@ def league(league_id: str, platform: str, rank_type: str, guid: str, roster_type
             if roster_type == "sf_value"
             else "superflex_one_qb_value"
         )
+
     elif platform == 'fc':
         league_pos_col = (
             "sf_position_rank" if league_type == "sf_value" else "one_qb_position_rank"
@@ -128,7 +135,7 @@ def league(league_id: str, platform: str, rank_type: str, guid: str, roster_type
 
     with open(
         Path.cwd() / "sql" / "summary" /
-        f"{rank_type}" / f"{platform}.sql",
+        f"{rank_source}" / f"{platform}.sql",
         "r",
     ) as power_summary_file:
         power_summary_sql = (
@@ -137,6 +144,7 @@ def league(league_id: str, platform: str, rank_type: str, guid: str, roster_type
             .replace("'league_id'", f"'{league_id}'")
             .replace("league_type", f"{league_type}")
             .replace("league_pos_col", f"{league_pos_col}")
+            .replace("'rank_type'", f"'{rank_type}'")
         )
     cursor_.execute(power_summary_sql)
     db_resp_obj = cursor_.fetchall()
@@ -151,6 +159,7 @@ def league_detail(league_id: str, platform: str, rank_type: str, guid: str, rost
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
     session_id = guid
     league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+    rank_type = 'dynasty' if rank_type.lower() == 'dynasty' else 'redraft'
 
     if platform == 'sf':
 
@@ -171,7 +180,7 @@ def league_detail(league_id: str, platform: str, rank_type: str, guid: str, rost
         league_pos_col = ''
 
     with open(
-        Path.cwd() / "sql" / "details" / f"{rank_type}" / f"{platform}.sql",
+        Path.cwd() / "sql" / "details" / "power" / f"{platform}.sql",
         "r",
     ) as power_detail_file:
         power_detail_sql = (
@@ -180,6 +189,7 @@ def league_detail(league_id: str, platform: str, rank_type: str, guid: str, rost
             .replace("'league_id'", f"'{league_id}'")
             .replace("league_type", f"{league_type}")
             .replace("league_pos_col", f"{league_pos_col}")
+            .replace("'rank_type'", f"'{rank_type}'")
         )
     cursor_.execute(power_detail_sql)
     db_resp_obj = cursor_.fetchall()
@@ -189,10 +199,11 @@ def league_detail(league_id: str, platform: str, rank_type: str, guid: str, rost
 
 
 @app.get("/trades_detail")
-def trades_detail(league_id: str, platform: str, roster_type: str, league_year: str, db: str = Depends(get_db)):
+def trades_detail(league_id: str, platform: str, roster_type: str, league_year: str, rank_type: str, db: str = Depends(get_db)):
 
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
     league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+    rank_type = 'dynasty' if rank_type.lower() == 'dynasty' else 'redraft'
 
     if platform == 'sf':
 
@@ -208,6 +219,7 @@ def trades_detail(league_id: str, platform: str, roster_type: str, league_year: 
             .replace("'current_year'", f"'{league_year}'")
             .replace("'league_id'", f"'{league_id}'")
             .replace("league_type", f"{league_type}")
+            .replace("'rank_type'", f"'{rank_type}'")
         )
     cursor_.execute(trades_sql)
     trades = cursor_.fetchall()
@@ -238,10 +250,11 @@ def trades_detail(league_id: str, platform: str, roster_type: str, league_year: 
 
 
 @app.get("/trades_summary")
-def trades_summary(league_id: str, platform: str, roster_type: str, league_year: str, db: str = Depends(get_db)):
+def trades_summary(league_id: str, platform: str, roster_type: str, league_year: str, rank_type: str, db: str = Depends(get_db)):
 
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
     league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
+    rank_type = 'dynasty' if rank_type.lower() == 'dynasty' else 'redraft'
 
     if platform == 'sf':
 
@@ -257,6 +270,7 @@ def trades_summary(league_id: str, platform: str, roster_type: str, league_year:
             .replace("'current_year'", f"'{league_year}'")
             .replace("'league_id'", f"'{league_id}'")
             .replace("league_type", f"{league_type}")
+            .replace("'rank_type'", f"'{rank_type}'")
         )
     cursor_.execute(trades_sql)
     db_resp_obj = cursor_.fetchall()
@@ -318,12 +332,14 @@ def best_avialable(league_id: str, platform: str, rank_type: str, guid: str, ros
 
     cursor_ = db.cursor(cursor_factory=extras.RealDictCursor)
     session_id = guid
+    rank_type = 'dynasty' if rank_type.lower() == 'dynasty' else 'redraft'
+
     if platform == 'sf':
         league_type = "superflex_sf_value " if roster_type == "sf_value" else "superflex_one_qb_value"
     else:
         league_type = 'sf_value' if roster_type == 'Superflex' else 'one_qb_value'
 
-    with open(Path.cwd() / "sql" / "best_available" / f"{rank_type}" / f"{platform}.sql",
+    with open(Path.cwd() / "sql" / "best_available" / "power" / f"{platform}.sql",
               "r",
               ) as ba_sql_file:
         ba_sql = (
@@ -331,6 +347,7 @@ def best_avialable(league_id: str, platform: str, rank_type: str, guid: str, ros
             .replace("'session_id'", f"'{session_id}'")
             .replace("'league_id'", f"'{league_id}'")
             .replace("league_type", f"{league_type}")
+            .replace("'rank_type'", f"'{rank_type}'")
         )
     cursor_.execute(ba_sql)
     db_resp_obj = cursor_.fetchall()

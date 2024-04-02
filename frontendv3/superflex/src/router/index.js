@@ -6,7 +6,7 @@ const router = createRouter({
     {
       path: '/leagues/:leagueYear/:userName/:guid',
       name: 'LeaguesApp',
-      component: () => import('../components/LeaguesApp.vue')
+      component: () => import('../components/LeaguesView.vue')
     },
     {
       path: '/username',
@@ -14,11 +14,11 @@ const router = createRouter({
       component: () => import('../components/UsernameView.vue')
     },
     {
-      path: '/leagueview/:userName/:userId/:leagueId/:leagueName/:leagueSetting/:leagueYear/:leagueStarters/:leagueSize/:leagueType/:guid/:rosterType/:avatar',
-      component: () => import('../components/LeagueView.vue')
+      path: '/leaguesummary/:userName/:userId/:leagueId/:leagueName/:leagueSetting/:leagueYear/:leagueStarters/:leagueSize/:leagueType/:guid/:rosterType/:avatar/:rankType',
+      component: () => import('../components/LeagueSummaryView.vue')
     },
     {
-      path: '/league/:leagueId/:platform/:rankType/:guid/:leagueYear/:userName/:leagueName/:rosterType/:userId/:avatar',
+      path: '/league/:leagueId/:platform/:rankType/:guid/:leagueYear/:userName/:leagueName/:rosterType/:userId/:avatar/',
       component: () => import('../components/LeagueDetailView.vue')
     },
     {
