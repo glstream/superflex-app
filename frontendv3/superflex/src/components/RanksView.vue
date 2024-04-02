@@ -247,7 +247,7 @@ async function fetchRanks(platform: string) {
   isLoading.value = true
 
   try {
-    const response = await axios.get('http://127.0.0.1:8000/ranks', {
+    const response = await axios.get('http://20.242.213.253:3100/ranks', {
       params: {
         platform
       }

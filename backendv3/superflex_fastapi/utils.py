@@ -20,14 +20,10 @@ def make_api_call(
         except RequestException as e:
             if retry < max_retries - 1:
                 sleep_time = backoff_factor * (2 ** retry)
-                print(
-                    f"Error while making API call: {e}. Retrying in {sleep_time} seconds..."
-                )
+                print(f"Error while making API call: {e}. Retrying in {sleep_time} seconds...")
                 sleep(sleep_time)
             else:
-                print(
-                    f"Error while making API call: {e}. Reached maximum retries ({max_retries})."
-                )
+                print(f"Error while making API call: {e}. Reached maximum retries ({max_retries}).")
                 raise
 
 
